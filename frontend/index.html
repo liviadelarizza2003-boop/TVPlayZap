@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#a855f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Livia Bot">
+  <meta name="description" content="Painel de gestão do bot WhatsApp — respostas automáticas e lembretes de renovação">
+  <title>Livia Bot — Painel</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Apple touch icons (gerados via CSS inline SVG como fallback) -->
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+</head>
+<body>
+
+<!-- ── Login Screen ────────────────────────────────────────── -->
+<div id="login-screen" class="login-screen hidden">
+  <div class="login-logo">🌸</div>
+  <h1 class="login-title">Livia Bot</h1>
+  <p class="login-subtitle">Seu assistente WhatsApp inteligente</p>
+  <div class="login-box">
+    <div class="form-group">
+      <label class="form-label" for="login-password">Senha de acesso</label>
+      <input id="login-password" type="password" class="form-input" placeholder="Digite sua senha"
+             autocomplete="current-password">
+    </div>
+    <button id="login-btn" class="btn btn-primary btn-full" style="margin-top:8px">
+      Entrar no painel
+    </button>
+    <p id="login-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
+  </div>
+</div>
+
+<!-- ── App Shell ────────────────────────────────────────────── -->
+<div id="app" class="hidden">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-logo">
+      <div class="logo-icon">🌸</div>
+      <span id="business-name-header">Livia Bot</span>
+    </div>
+    <div id="bot-status-badge" class="bot-status-badge">
+      <div class="dot"></div>
+      <span id="bot-status-text">Offline</span>
+    </div>
+  </header>
+
+  <!-- View Container -->
+  <main id="view"></main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-route="dashboard" id="nav-dashboard">
+      <span class="nav-icon">🏠</span>
+      <span>Início</span>
+    </button>
+    <button class="nav-item" data-route="clients" id="nav-clients">
+      <span class="nav-icon">👥</span>
+      <span>Clientes</span>
+    </button>
+    <button class="nav-item" data-route="training" id="nav-training">
+      <span class="nav-icon">🎓</span>
+      <span>Treinar</span>
+      <span id="training-badge" class="nav-badge hidden">0</span>
+    </button>
+    <button class="nav-item" data-route="qrcode" id="nav-qrcode">
+      <span class="nav-icon">📱</span>
+      <span>WhatsApp</span>
+    </button>
+    <button class="nav-item" data-route="settings" id="nav-settings">
+      <span class="nav-icon">⚙️</span>
+      <span>Config</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ── Overlay / Drawer ─────────────────────────────────────── -->
+<div id="overlay" class="overlay"></div>
+<div id="drawer" class="drawer">
+  <div class="drawer-handle"></div>
+  <div id="drawer-content"></div>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── Scripts ──────────────────────────────────────────────── -->
+<script src="/js/app.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/clients.js"></script>
+<script src="/js/training.js"></script>
+<script src="/js/qrcode.js"></script>
+<script src="/js/config.js"></script>
+
+</body>
+</html>

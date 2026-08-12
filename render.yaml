@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: livia-bot
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: America/Sao_Paulo
+      - key: DATA_DIR
+        value: /data
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+      - key: BUSINESS_NAME
+        sync: false
+      - key: OWNER_PHONE
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: livia-data
+      mountPath: /data
+      sizeGB: 1
