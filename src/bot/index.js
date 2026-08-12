@@ -72,6 +72,13 @@ async function sendMessage(jid, text) {
 // Exponha o sendMessage para o scheduler de lembretes
 setSendMessage(sendMessage);
 
+/** Descarta a sessão atual e cria uma conexão nova do zero */
+async function resetSession() {
+  fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+  fs.mkdirSync(SESSION_DIR, { recursive: true });
+  await connect();
+}
+
 /**
  * Gera um código de pareamento (alternativa ao QR Code) para vincular o
  * WhatsApp digitando um código de 8 caracteres em vez de escanear a câmera.
@@ -81,7 +88,16 @@ setSendMessage(sendMessage);
  */
 async function requestPairingCode(phoneNumber) {
   if (!sock) throw new Error('Bot ainda não inicializado');
-  if (sock.authState?.creds?.registered) throw new Error('WhatsApp já está vinculado');
+
+  if (connected) throw new Error('WhatsApp já está vinculado e conectado');
+
+  // O Baileys marca a sessão como "registrada" assim que o WhatsApp confirma
+  // um pareamento — mas se a conexão não chegou a abrir de verdade (queda de
+  // rede, etc.), fica "registrada" sem estar conectada. Nesse limbo, reinicia
+  // a sessão do zero em vez de travar novas tentativas.
+  if (sock.authState?.creds?.registered) {
+    await resetSession();
+  }
 
   const cleaned = phoneNumber.replace(/\D/g, '');
   if (cleaned.length < 10) throw new Error('Telefone inválido — use o formato com DDI e DDD, ex: 5511999999999');
