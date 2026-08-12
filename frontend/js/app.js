@@ -5,10 +5,12 @@
 'use strict';
 
 // ── API helper ───────────────────────────────────────────────
+const AUTH_EXEMPT_PATHS = ['/api/auth/login', '/api/auth/reset-password'];
+
 const api = {
   async get(path) {
     const r = await fetch(path, { credentials: 'include' });
-    if (r.status === 401 && path !== '/api/auth/login') { App.showLogin(); return null; }
+    if (r.status === 401 && !AUTH_EXEMPT_PATHS.includes(path)) { App.showLogin(); return null; }
     if (!r.ok) throw new Error((await r.json()).error || r.statusText);
     return r.json();
   },
@@ -19,7 +21,7 @@ const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (r.status === 401 && path !== '/api/auth/login') { App.showLogin(); return null; }
+    if (r.status === 401 && !AUTH_EXEMPT_PATHS.includes(path)) { App.showLogin(); return null; }
     if (!r.ok) throw new Error((await r.json()).error || r.statusText);
     return r.json();
   },
@@ -117,6 +119,56 @@ const App = {
     btn.onclick = doLogin;
     inp.onkeydown = e => { if (e.key === 'Enter') doLogin(); };
     inp.focus();
+
+    // ── Esqueci minha senha ──────────────────────────────────
+    const forgotLink  = document.getElementById('forgot-password-link');
+    const cancelLink  = document.getElementById('cancel-reset-link');
+    const loginBox    = document.querySelector('#login-screen .login-box');
+    const resetBox    = document.getElementById('reset-box');
+    const resetBtn    = document.getElementById('reset-btn');
+    const resetKey    = document.getElementById('reset-key');
+    const resetPass   = document.getElementById('reset-new-password');
+    const resetErr    = document.getElementById('reset-error');
+    const resetOk     = document.getElementById('reset-success');
+
+    forgotLink.onclick = (e) => {
+      e.preventDefault();
+      loginBox.classList.add('hidden');
+      resetBox.classList.remove('hidden');
+      resetErr.classList.add('hidden');
+      resetOk.classList.add('hidden');
+      resetKey.focus();
+    };
+
+    cancelLink.onclick = (e) => {
+      e.preventDefault();
+      resetBox.classList.add('hidden');
+      loginBox.classList.remove('hidden');
+    };
+
+    const doReset = async () => {
+      resetErr.classList.add('hidden');
+      resetOk.classList.add('hidden');
+      resetBtn.textContent = 'Redefinindo...';
+      resetBtn.disabled = true;
+      try {
+        await api.post('/api/auth/reset-password', {
+          recoveryKey: resetKey.value,
+          newPassword: resetPass.value,
+        });
+        resetOk.classList.remove('hidden');
+        resetKey.value = '';
+        resetPass.value = '';
+      } catch (e) {
+        resetErr.textContent = e.message;
+        resetErr.classList.remove('hidden');
+      } finally {
+        resetBtn.textContent = 'Redefinir senha';
+        resetBtn.disabled = false;
+      }
+    };
+
+    resetBtn.onclick = doReset;
   },
 
   showApp() {

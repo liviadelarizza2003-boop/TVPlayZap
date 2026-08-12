@@ -31,6 +31,29 @@
       Entrar no painel
     </button>
     <p id="login-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
+    <p style="text-align:center;margin-top:12px">
+      <a href="#" id="forgot-password-link" class="text-sm">Esqueci minha senha</a>
+    </p>
+  </div>
+
+  <!-- Reset de senha (chave de recuperação) -->
+  <div id="reset-box" class="login-box hidden" style="margin-top:16px">
+    <div class="form-group">
+      <label class="form-label" for="reset-key">Chave de recuperação</label>
+      <input id="reset-key" type="password" class="form-input" placeholder="Chave definida no servidor">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="reset-new-password">Nova senha</label>
+      <input id="reset-new-password" type="password" class="form-input" placeholder="Mínimo 6 caracteres">
+    </div>
+    <button id="reset-btn" class="btn btn-primary btn-full" style="margin-top:8px">
+      Redefinir senha
+    </button>
+    <p id="reset-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
+    <p id="reset-success" class="text-sm mt-8 hidden" style="text-align:center">Senha redefinida! Você já pode entrar.</p>
+    <p style="text-align:center;margin-top:12px">
+      <a href="#" id="cancel-reset-link" class="text-sm">Voltar ao login</a>
+    </p>
   </div>
 </div>
 

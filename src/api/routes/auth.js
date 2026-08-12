@@ -50,6 +50,30 @@ router.post('/change-password', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+/**
+ * POST /api/auth/reset-password
+ * Reset de emergência (sem precisar da senha atual) usando a RECOVERY_KEY
+ * definida em variável de ambiente. Não requer login.
+ */
+router.post('/reset-password', (req, res) => {
+  const { recoveryKey, newPassword } = req.body || {};
+  const expected = process.env.RECOVERY_KEY;
+
+  if (!expected) {
+    return res.status(503).json({ error: 'Reset de senha não configurado (RECOVERY_KEY ausente)' });
+  }
+  if (!recoveryKey || recoveryKey !== expected) {
+    return res.status(401).json({ error: 'Chave de recuperação incorreta' });
+  }
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Senha deve ter ao menos 6 caracteres' });
+  }
+
+  const hash = bcrypt.hashSync(newPassword, 10);
+  db.run("INSERT OR REPLACE INTO config (key, value) VALUES ('admin_password_hash', ?)", [hash]);
+  res.json({ ok: true });
+});
+
 /** Middleware de autenticação — exportado para uso nos outros routers */
 function requireAuth(req, res, next) {
   const token = req.cookies?.token || req.headers['authorization']?.replace('Bearer ', '');

@@ -42,6 +42,7 @@ Edite o `.env` e ajuste pelo menos:
 |---|---|
 | `JWT_SECRET` | string longa e aleatória — usada para assinar o token de login |
 | `ADMIN_PASSWORD` | senha inicial do painel (pode ser trocada depois, dentro do painel) |
+| `RECOVERY_KEY` | chave de recuperação usada em "Esqueci minha senha" na tela de login, caso a senha do painel seja esquecida — guarde em local seguro |
 | `GROQ_API_KEY` | chave gratuita em [console.groq.com](https://console.groq.com) — só é necessária para o botão "Analisar histórico de conversas" |
 | `BUSINESS_NAME`, `OWNER_PHONE` | valores padrão de config, também editáveis no painel |
 | `WORKING_HOURS_START/END`, `TZ` | horário de atendimento e fuso horário |
@@ -129,6 +130,7 @@ Depois do deploy, acesse a URL do serviço, faça login e escaneie o QR Code nov
 - **Editei um arquivo em `frontend/js/` e o navegador continua com o código antigo** — o service worker (`sw.js`) faz cache do shell do PWA. Em desenvolvimento, use aba anônima ou dê "Unregister" no service worker (DevTools → Application → Service Workers) e recarregue.
 - **Login não funciona / fica piscando entre painel e tela de login** — verifique se `JWT_SECRET` está definido no `.env` e se os cookies não estão sendo bloqueados (o login usa cookie `httpOnly`, `SameSite=Lax`).
 - **"Analisar histórico" não gera nenhuma sugestão** — confira se `GROQ_API_KEY` está preenchida no `.env` e se já existem mensagens recebidas registradas em `messages_log` (o bot precisa ter ficado conectado recebendo mensagens antes).
+- **Esqueci a senha do painel** — na tela de login, clique em "Esqueci minha senha" e informe a `RECOVERY_KEY` configurada no `.env` (ou nas variáveis de ambiente do Render) junto com a nova senha.
 - **QR Code não aparece** — confira os logs do servidor; se a sessão anterior ficou corrompida, apague a pasta `data/session/` e reinicie.
 
 ---
