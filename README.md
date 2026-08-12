@@ -57,7 +57,7 @@ npm run dev         # com --watch (reinicia sozinho ao salvar arquivos)
 
 O servidor sobe em `http://localhost:3200` (ou na porta definida em `PORT`). Ele:
 1. Serve o painel PWA (`frontend/`) e a API REST (`/api/*`)
-2. Inicia a conexão com o WhatsApp (Baileys) — gera QR Code se não houver sessão salva em `data/session/`
+2. Inicia a conexão com o WhatsApp (Baileys) — gera QR Code se não houver sessão salva no Postgres
 3. Ativa o cron de lembretes de vencimento (todo dia às 9h, fuso `TZ`)
 
 ### 5. Primeiro acesso
@@ -124,12 +124,12 @@ livia-bot/
 O `render.yaml` já está pronto (`render blueprint` — New → Blueprint no dashboard do Render):
 - Build: `npm install` / Start: `npm start`
 - Plano free do Render (sem disco — não é suportado no free tier)
-- Clientes, FAQ e configurações ficam no Postgres do Supabase (`DATABASE_URL`), que sobrevive a restarts/redeploys
-- A sessão de login do WhatsApp fica no disco efêmero do serviço — se o Render reiniciar o container (hibernação por inatividade, redeploy, manutenção), é preciso escanear o QR Code de novo. Considere um pinger (ex: [cron-job.org](https://cron-job.org)) batendo na URL a cada ~10 min pra reduzir a hibernação por inatividade
+- Clientes, FAQ, configurações **e a sessão de login do WhatsApp** ficam no Postgres do Supabase (`DATABASE_URL`), que sobrevive a restarts/redeploys/hibernação — não é mais preciso escanear o QR Code de novo a cada atualização de código
+- Ainda assim, considere um pinger (ex: [cron-job.org](https://cron-job.org)) batendo na URL a cada ~10 min pra reduzir a hibernação por inatividade — a sessão não é perdida se hibernar, mas o bot fica temporariamente offline até "acordar"
 - `JWT_SECRET` é gerado automaticamente pelo Render
 - `DATABASE_URL`, `GROQ_API_KEY`, `BUSINESS_NAME`, `OWNER_PHONE`, `ADMIN_PASSWORD`, `RECOVERY_KEY` precisam ser preenchidos manualmente no painel do Render (marcados como `sync: false`)
 
-Depois do deploy, acesse a URL do serviço e faça login normalmente — clientes e FAQ já estarão lá mesmo que o WhatsApp precise reconectar.
+Depois do deploy, acesse a URL do serviço e faça login normalmente — clientes, FAQ e a conexão do WhatsApp já estarão lá, mesmo depois de uma atualização de código.
 
 ---
 
@@ -139,7 +139,7 @@ Depois do deploy, acesse a URL do serviço e faça login normalmente — cliente
 - **Login não funciona / fica piscando entre painel e tela de login** — verifique se `JWT_SECRET` está definido no `.env` e se os cookies não estão sendo bloqueados (o login usa cookie `httpOnly`, `SameSite=Lax`).
 - **"Analisar histórico" não gera nenhuma sugestão** — confira se `GROQ_API_KEY` está preenchida no `.env` e se já existem mensagens recebidas registradas em `messages_log` (o bot precisa ter ficado conectado recebendo mensagens antes).
 - **Esqueci a senha do painel** — na tela de login, clique em "Esqueci minha senha" e informe a `RECOVERY_KEY` configurada no `.env` (ou nas variáveis de ambiente do Render) junto com a nova senha.
-- **QR Code não aparece** — confira os logs do servidor; se a sessão anterior ficou corrompida, apague a pasta `data/session/` e reinicie.
+- **QR Code não aparece, ou o código de pareamento não é aceito** — confira os logs do servidor. Se a sessão anterior ficou corrompida ou incompleta, apague as linhas `whatsapp_creds` (tabela `config`) e todas as da tabela `whatsapp_keys` no Supabase e reinicie — o sistema também faz essa limpeza sozinho quando detecta uma sessão inválida.
 - **Erro "DATABASE_URL não configurada" ao iniciar** — falta preencher `DATABASE_URL` no `.env` (local) ou nas variáveis de ambiente do Render (produção) com a connection string do Supabase.
 - **Erro de conexão `ENOTFOUND db.xxx.supabase.co`** — a conexão direta do Supabase exige IPv6; use a string do **"Session pooler"** (host `aws-0-<região>.pooler.supabase.com`), que funciona em IPv4.
 

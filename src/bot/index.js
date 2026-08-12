@@ -3,17 +3,15 @@
  * bot/index.js — Conexão WhatsApp via Baileys
  *
  * - Gera QR Code e transmite via WebSocket para o painel (tela de Configurações)
- * - Persiste a sessão em DATA_DIR/session/ para não precisar escanear novamente
+ * - Persiste a sessão no Postgres (dbAuthState.js) — sobrevive a redeploys no
+ *   Render, que não tem disco persistente no free tier
  * - Expõe sendMessage() para uso pelo messageHandler e pelo scheduler
  * - Reconecta automaticamente em caso de desconexão
  */
 
-const path = require('path');
-const fs   = require('fs');
 const pino = require('pino');
 const {
   default: makeWASocket,
-  useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore,
@@ -23,11 +21,8 @@ const {
 const { handleMessage } = require('./messageHandler');
 const { ingestHistory } = require('./historyIngest');
 const { reconcileLidPhones } = require('./lidReconcile');
+const { useDbAuthState, clearDbAuthState } = require('./dbAuthState');
 const { setSendMessage }  = require('../scheduler/renewalReminder');
-
-const DATA_DIR    = process.env.DATA_DIR || path.join(__dirname, '../../data');
-const SESSION_DIR = path.join(DATA_DIR, 'session');
-fs.mkdirSync(SESSION_DIR, { recursive: true });
 
 const silentLogger = pino({ level: 'silent' });
 
@@ -74,8 +69,7 @@ setSendMessage(sendMessage);
 
 /** Descarta a sessão atual e cria uma conexão nova do zero */
 async function resetSession() {
-  fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-  fs.mkdirSync(SESSION_DIR, { recursive: true });
+  await clearDbAuthState();
   await connect();
 }
 
@@ -106,7 +100,7 @@ async function requestPairingCode(phoneNumber) {
 }
 
 async function connect() {
-  const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
+  const { state, saveCreds } = await useDbAuthState();
   const { version }          = await fetchLatestBaileysVersion();
 
   sock = makeWASocket({
@@ -166,9 +160,9 @@ async function connect() {
         setTimeout(connect, 5000); // aguarda 5s antes de reconectar
       } else {
         // loggedOut: limpa sessão e aguarda novo QR scan
-        fs.rmSync(SESSION_DIR, { recursive: true, force: true });
-        fs.mkdirSync(SESSION_DIR, { recursive: true });
-        setTimeout(connect, 2000);
+        clearDbAuthState()
+          .catch(err => console.error('[bot] Erro ao limpar sessão:', err))
+          .finally(() => setTimeout(connect, 2000));
       }
     }
   });

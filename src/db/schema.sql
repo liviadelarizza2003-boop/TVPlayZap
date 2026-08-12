@@ -67,6 +67,17 @@ CREATE TABLE IF NOT EXISTS renewal_notifications (
   status     TEXT DEFAULT 'sent'        -- sent | failed
 );
 
+-- Chaves do protocolo Signal do Baileys (sessão de login do WhatsApp).
+-- As credenciais (creds) ficam na tabela config, chave 'whatsapp_creds'.
+-- Guardar isso no Postgres em vez de arquivo local é o que permite a sessão
+-- sobreviver a redeploys no Render (que não tem disco persistente no free tier).
+CREATE TABLE IF NOT EXISTS whatsapp_keys (
+  type    TEXT NOT NULL,
+  key_id  TEXT NOT NULL,
+  value   TEXT NOT NULL,
+  PRIMARY KEY (type, key_id)
+);
+
 -- Log de mensagens recebidas/enviadas (para histórico e debug)
 CREATE TABLE IF NOT EXISTS messages_log (
   id          SERIAL PRIMARY KEY,
