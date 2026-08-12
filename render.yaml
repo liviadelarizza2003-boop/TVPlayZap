@@ -10,8 +10,6 @@ services:
         value: production
       - key: TZ
         value: America/Sao_Paulo
-      - key: DATA_DIR
-        value: /data
       - key: JWT_SECRET
         generateValue: true
       - key: GROQ_API_KEY
@@ -24,7 +22,3 @@ services:
         sync: false
       - key: RECOVERY_KEY
         sync: false
-    disk:
-      name: livia-data
-      mountPath: /data
-      sizeGB: 1
