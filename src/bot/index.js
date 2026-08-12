@@ -71,6 +71,23 @@ async function sendMessage(jid, text) {
 // Exponha o sendMessage para o scheduler de lembretes
 setSendMessage(sendMessage);
 
+/**
+ * Gera um código de pareamento (alternativa ao QR Code) para vincular o
+ * WhatsApp digitando um código de 8 caracteres em vez de escanear a câmera.
+ * Útil quando só existe o próprio celular disponível: a pessoa vê o código
+ * no navegador do celular e digita no app do WhatsApp do mesmo aparelho.
+ * @param {string} phoneNumber — com DDI e DDD, só dígitos (ex: 5511999999999)
+ */
+async function requestPairingCode(phoneNumber) {
+  if (!sock) throw new Error('Bot ainda não inicializado');
+  if (sock.authState?.creds?.registered) throw new Error('WhatsApp já está vinculado');
+
+  const cleaned = phoneNumber.replace(/\D/g, '');
+  if (cleaned.length < 10) throw new Error('Telefone inválido — use o formato com DDI e DDD, ex: 5511999999999');
+
+  return sock.requestPairingCode(cleaned);
+}
+
 async function connect() {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
   const { version }          = await fetchLatestBaileysVersion();
@@ -160,4 +177,4 @@ async function connect() {
   });
 }
 
-module.exports = { connect, sendMessage, getStatus, addQrListener };
+module.exports = { connect, sendMessage, getStatus, addQrListener, requestPairingCode };

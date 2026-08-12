@@ -30,9 +30,31 @@ const QRCodeView = {
             </div>
           </div>
           <div id="qr-instructions" class="text-sm text-muted" style="text-align:center;max-width:280px;line-height:1.6">
-            Abra o WhatsApp no celular da Lívia<br>
+            Abra o WhatsApp no celular que vai atender<br>
             <strong>Dispositivos Vinculados → Vincular dispositivo</strong><br>
             e escaneie o QR acima.
+          </div>
+
+          <p style="text-align:center;margin-top:14px">
+            <a href="#" id="toggle-pairing-code" class="text-sm">Só tenho esse celular, não consigo escanear →</a>
+          </p>
+
+          <div id="pairing-code-box" class="hidden" style="width:100%;max-width:320px;margin:8px auto 0">
+            <p class="text-sm text-muted" style="text-align:center;line-height:1.6;margin-bottom:12px">
+              Digite o número que vai atender. Vamos gerar um código — aí no mesmo celular, abra o WhatsApp em
+              <strong>Dispositivos Vinculados → Vincular dispositivo → Vincular com número de telefone</strong>
+              e digite o código.
+            </p>
+            <div class="form-group">
+              <input id="pairing-phone" type="tel" class="form-input" placeholder="5511999999999 (DDI + DDD + número)">
+            </div>
+            <button id="pairing-code-btn" class="btn btn-primary btn-full">Gerar código</button>
+            <p id="pairing-code-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
+            <div id="pairing-code-result" class="hidden" style="text-align:center;margin-top:16px">
+              <div class="text-sm text-muted mb-8">Código de pareamento:</div>
+              <div id="pairing-code-value" style="font-size:1.8rem;font-weight:700;letter-spacing:3px;color:var(--text-primary)"></div>
+              <p class="text-sm text-muted mt-8">Válido por poucos minutos — se expirar, gere outro.</p>
+            </div>
           </div>
         </div>
 
@@ -59,6 +81,43 @@ const QRCodeView = {
     `;
 
     this.connectWebSocket();
+    this.setupPairingCode();
+  },
+
+  setupPairingCode() {
+    const toggle = document.getElementById('toggle-pairing-code');
+    const box    = document.getElementById('pairing-code-box');
+    const btn    = document.getElementById('pairing-code-btn');
+    const phone  = document.getElementById('pairing-phone');
+    const err    = document.getElementById('pairing-code-error');
+    const result = document.getElementById('pairing-code-result');
+    const value  = document.getElementById('pairing-code-value');
+
+    toggle.onclick = (e) => {
+      e.preventDefault();
+      box.classList.toggle('hidden');
+    };
+
+    btn.onclick = async () => {
+      err.classList.add('hidden');
+      result.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Gerando...';
+      try {
+        const res = await api.post('/api/bot/pairing-code', { phone: phone.value });
+        if (res?.code) {
+          const code = res.code;
+          value.textContent = code.length === 8 ? `${code.slice(0,4)}-${code.slice(4)}` : code;
+          result.classList.remove('hidden');
+        }
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Gerar código';
+      }
+    };
   },
 
   connectWebSocket() {

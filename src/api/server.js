@@ -20,6 +20,7 @@ const cookieParser = require('cookie-parser');
 const { WebSocketServer } = require('ws');
 
 const db = require('../db/db');
+const asyncHandler = require('./asyncHandler');
 
 // Rotas
 const authRouter      = require('./routes/auth');
@@ -52,6 +53,14 @@ app.use('/api/config',     configRouter);
 app.get('/api/bot/status', requireAuth, (_req, res) => {
   res.json(bot.getStatus());
 });
+
+// ── Código de pareamento (alternativa ao QR Code) ──────────────────────────
+app.post('/api/bot/pairing-code', requireAuth, asyncHandler(async (req, res) => {
+  const { phone } = req.body || {};
+  if (!phone) return res.status(400).json({ error: 'Telefone obrigatório' });
+  const code = await bot.requestPairingCode(phone);
+  res.json({ code });
+}));
 
 // ── Frontend PWA (arquivos estáticos) ─────────────────────────────────────
 const FRONTEND_DIR = path.join(__dirname, '../../frontend');
