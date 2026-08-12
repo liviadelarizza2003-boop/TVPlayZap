@@ -105,4 +105,4 @@ async function handleMessage(msg, sendMessage) {
   );
 }
 
-module.exports = { handleMessage };
+module.exports = { handleMessage, getMessageText };

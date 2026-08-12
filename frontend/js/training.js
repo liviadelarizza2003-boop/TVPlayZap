@@ -5,7 +5,8 @@
 const TrainingView = {
   candidates: [],
   faqItems:   [],
-  tab:        'candidates', // 'candidates' | 'faq'
+  clientCandidates: [],
+  tab:        'candidates', // 'candidates' | 'faq' | 'clients'
 
   async render(container) {
     container.innerHTML = `
@@ -15,11 +16,15 @@ const TrainingView = {
       <div class="flex gap-8 mb-16" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px">
         <button id="tab-candidates" class="btn btn-primary" style="flex:1;justify-content:center;padding:8px 12px;font-size:0.82rem"
           onclick="TrainingView.switchTab('candidates')">
-          ✨ Sugestões da IA
+          ✨ FAQ sugerido
         </button>
         <button id="tab-faq" class="btn btn-ghost" style="flex:1;justify-content:center;padding:8px 12px;font-size:0.82rem"
           onclick="TrainingView.switchTab('faq')">
           📚 FAQ Ativo
+        </button>
+        <button id="tab-clients" class="btn btn-ghost" style="flex:1;justify-content:center;padding:8px 12px;font-size:0.82rem"
+          onclick="TrainingView.switchTab('clients')">
+          👥 Clientes sugeridos
         </button>
       </div>
 
@@ -56,12 +61,14 @@ const TrainingView = {
   },
 
   async loadAll() {
-    const [candidates, faq] = await Promise.all([
+    const [candidates, faq, clientCandidates] = await Promise.all([
       api.get('/api/faq/candidates'),
       api.get('/api/faq'),
+      api.get('/api/clients/candidates'),
     ]);
-    this.candidates = candidates || [];
-    this.faqItems   = faq || [];
+    this.candidates       = candidates || [];
+    this.faqItems         = faq || [];
+    this.clientCandidates = clientCandidates || [];
 
     // Mostra banner de onboarding se não tem nada
     const banner = document.getElementById('onboarding-banner');
@@ -75,14 +82,9 @@ const TrainingView = {
 
   switchTab(tab) {
     this.tab = tab;
-    document.getElementById('tab-candidates').className =
-      tab === 'candidates' ? 'btn btn-primary' : 'btn btn-ghost';
-    document.getElementById('tab-faq').className =
-      tab === 'faq' ? 'btn btn-primary' : 'btn btn-ghost';
-
-    // Ajusta estilo dos botões de tab manualmente
-    ['candidates','faq'].forEach(t => {
+    ['candidates','faq','clients'].forEach(t => {
       const btn = document.getElementById(`tab-${t}`);
+      btn.className = tab === t ? 'btn btn-primary' : 'btn btn-ghost';
       btn.style.flex = '1';
       btn.style.justifyContent = 'center';
       btn.style.padding = '8px 12px';
@@ -98,8 +100,10 @@ const TrainingView = {
 
     if (this.tab === 'candidates') {
       this.renderCandidates(content);
-    } else {
+    } else if (this.tab === 'faq') {
       this.renderFaq(content);
+    } else {
+      this.renderClientCandidates(content);
     }
   },
 
@@ -161,6 +165,161 @@ const TrainingView = {
           <span class="list-item-badge badge-faq">usado ${f.usage_count}x</span>
         </div>
       </div>`).join('');
+  },
+
+  renderClientCandidates(container) {
+    container.innerHTML = `
+      <div class="card" style="margin-bottom:16px;text-align:center">
+        <div class="text-sm text-muted" style="margin-bottom:12px;line-height:1.5">
+          Vasculha o histórico de conversas atrás de nome, plano e data de vencimento mencionados pelos clientes.
+        </div>
+        <button id="client-extraction-btn" class="btn btn-primary btn-full" onclick="TrainingView.startClientExtraction()">
+          👥 Extrair clientes do histórico
+        </button>
+        <div id="client-extraction-progress" class="hidden" style="margin-top:14px">
+          <div class="text-sm text-muted mb-8" id="client-extraction-status-text">Iniciando...</div>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="client-extraction-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div id="client-candidates-list"></div>
+    `;
+    this.renderClientCandidatesList();
+  },
+
+  renderClientCandidatesList() {
+    const list = document.getElementById('client-candidates-list');
+    if (!list) return;
+
+    if (!this.clientCandidates.length) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>Nenhuma sugestão pendente.<br>Use o botão acima para vasculhar o histórico.</p>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = this.clientCandidates.map(c => `
+      <div class="training-card" id="client-card-${c.id}">
+        <div class="ai-label">✨ Sugestão da IA</div>
+        <div class="question-text">${escapeHtml(c.name || '(nome não identificado)')}</div>
+        <div class="text-sm text-muted" style="margin:4px 0 10px">
+          📱 ${escapeHtml(c.phone)}${c.plan ? ` · ${escapeHtml(c.plan)}` : ''}
+          ${c.due_date ? ` · vence ${formatDate(c.due_date)}` : ''}
+        </div>
+        <div class="training-actions">
+          <button class="btn btn-success" onclick="TrainingView.openClientCandidateForm(${c.id})">✅ Revisar e aprovar</button>
+          <button class="btn btn-danger"  onclick="TrainingView.rejectClient(${c.id})">✖ Descartar</button>
+        </div>
+      </div>`).join('');
+  },
+
+  openClientCandidateForm(id) {
+    const c = this.clientCandidates.find(x => x.id === id);
+    if (!c) return;
+
+    const closeDrawer = openDrawer(`
+      <h2 class="drawer-title">✅ Aprovar Cliente Sugerido</h2>
+      <form id="client-candidate-form">
+        <div class="form-group">
+          <label class="form-label">Nome completo *</label>
+          <input class="form-input" name="name" required value="${escapeHtml(c.name || '')}" placeholder="Ex: Maria Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp</label>
+          <input class="form-input" value="${escapeHtml(c.phone)}" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plano / Serviço</label>
+          <input class="form-input" name="plan" value="${escapeHtml(c.plan || '')}" placeholder="Ex: Plano Mensal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de vencimento</label>
+          <input class="form-input" name="due_date" type="date" value="${c.due_date || ''}">
+        </div>
+        ${c.source_messages ? `
+          <div class="source-msgs" style="max-height:140px;overflow-y:auto;white-space:pre-wrap">
+            <strong style="color:var(--text-secondary)">Trecho da conversa:</strong><br>
+            ${escapeHtml(c.source_messages.slice(0, 800))}
+          </div>` : ''}
+        <div class="flex gap-8 mt-16">
+          <button type="submit" class="btn btn-primary" style="flex:1">Aprovar e cadastrar</button>
+        </div>
+      </form>
+    `);
+
+    document.getElementById('client-candidate-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      try {
+        await api.post(`/api/clients/candidates/${id}/approve`, data);
+        showToast('Cliente aprovado e cadastrado!');
+        closeDrawer();
+        this.clientCandidates = this.clientCandidates.filter(x => x.id !== id);
+        this.renderClientCandidatesList();
+        App.refreshTrainingBadge();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+  },
+
+  async rejectClient(id) {
+    try {
+      await api.post(`/api/clients/candidates/${id}/reject`, {});
+      showToast('Sugestão descartada.');
+      this.clientCandidates = this.clientCandidates.filter(c => c.id !== id);
+      this.renderClientCandidatesList();
+      App.refreshTrainingBadge();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  },
+
+  async startClientExtraction() {
+    const btn = document.getElementById('client-extraction-btn');
+    const progress = document.getElementById('client-extraction-progress');
+    const statusText = document.getElementById('client-extraction-status-text');
+    const bar = document.getElementById('client-extraction-bar');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Iniciando...';
+    progress.classList.remove('hidden');
+
+    try {
+      await api.post('/api/onboarding/analyze-clients', {});
+      showToast('Extração iniciada! Aguarde os resultados...', 'success', 5000);
+
+      const poll = setInterval(async () => {
+        try {
+          const state = await api.get('/api/onboarding/clients-status');
+          if (!state) return;
+
+          const pct = state.total > 0 ? Math.round((state.processed / state.total) * 100) : 0;
+          bar.style.width = `${pct}%`;
+          statusText.textContent = state.running
+            ? `Analisando conversas... ${state.processed}/${state.total} (${state.generated} sugestões geradas)`
+            : `Concluído! ${state.generated} sugestões geradas.`;
+
+          if (!state.running) {
+            clearInterval(poll);
+            btn.disabled = false;
+            btn.textContent = '👥 Extrair clientes do histórico';
+            if (state.generated > 0) {
+              showToast(`${state.generated} clientes sugeridos prontos para revisar! 🎉`);
+              this.clientCandidates = (await api.get('/api/clients/candidates')) || [];
+              this.renderClientCandidatesList();
+            }
+          }
+        } catch {}
+      }, 3000);
+
+    } catch (e) {
+      showToast(e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = '👥 Extrair clientes do histórico';
+    }
   },
 
   async approve(id) {

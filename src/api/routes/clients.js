@@ -44,6 +44,75 @@ router.get('/expiring', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
+// ══════════════════════════════════════════════════════════
+//  CANDIDATAS (clientes sugeridos a partir do histórico)
+//  — precisa vir antes de "/:id" pra não colidir com o path
+// ══════════════════════════════════════════════════════════
+
+/** GET /api/clients/candidates — lista pendentes */
+router.get('/candidates', asyncHandler(async (_req, res) => {
+  const rows = await db.all(
+    "SELECT * FROM client_candidates WHERE status = 'pending' ORDER BY created_at ASC"
+  );
+  res.json(rows.map(r => ({
+    ...r,
+    source_messages: r.source_messages ? JSON.parse(r.source_messages) : '',
+  })));
+}));
+
+/** GET /api/clients/candidates/count — contagem de pendentes (badge do menu) */
+router.get('/candidates/count', asyncHandler(async (_req, res) => {
+  const row = await db.get("SELECT COUNT(*) as count FROM client_candidates WHERE status = 'pending'");
+  res.json({ count: Number(row?.count) || 0 });
+}));
+
+/** POST /api/clients/candidates/:id/approve — aprova e cria o cliente real */
+router.post('/candidates/:id/approve', asyncHandler(async (req, res) => {
+  const candidate = await db.get('SELECT * FROM client_candidates WHERE id = ?', [req.params.id]);
+  if (!candidate) return res.status(404).json({ error: 'Sugestão não encontrada' });
+
+  const name     = (req.body?.name     || candidate.name || '').trim();
+  const plan     = (req.body?.plan     || candidate.plan || '').trim();
+  const due_date = req.body?.due_date  || candidate.due_date || null;
+
+  if (!name) return res.status(400).json({ error: 'Nome é obrigatório para aprovar' });
+
+  try {
+    const result = await db.run(
+      `INSERT INTO clients (name, phone, plan, due_date) VALUES (?, ?, ?, ?) RETURNING id`,
+      [name, candidate.phone, plan || null, due_date]
+    );
+
+    await db.run(
+      "UPDATE client_candidates SET status = 'approved', reviewed_at = now() WHERE id = ?",
+      [req.params.id]
+    );
+
+    res.status(201).json({
+      ok: true,
+      clientId: result.rows[0].id,
+      message: 'Cliente aprovado e cadastrado!',
+    });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Já existe um cliente com este telefone' });
+    }
+    throw err;
+  }
+}));
+
+/** POST /api/clients/candidates/:id/reject — descarta sugestão */
+router.post('/candidates/:id/reject', asyncHandler(async (req, res) => {
+  const candidate = await db.get('SELECT id FROM client_candidates WHERE id = ?', [req.params.id]);
+  if (!candidate) return res.status(404).json({ error: 'Sugestão não encontrada' });
+
+  await db.run(
+    "UPDATE client_candidates SET status = 'rejected', reviewed_at = now() WHERE id = ?",
+    [req.params.id]
+  );
+  res.json({ ok: true });
+}));
+
 /** GET /api/clients/:id */
 router.get('/:id', asyncHandler(async (req, res) => {
   const row = await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);

@@ -45,6 +45,19 @@ CREATE TABLE IF NOT EXISTS faq_candidates (
   created_at       TIMESTAMPTZ DEFAULT now()
 );
 
+-- Clientes sugeridos pela IA a partir do histórico de conversas (revisão manual antes de virar cliente real)
+CREATE TABLE IF NOT EXISTS client_candidates (
+  id               SERIAL PRIMARY KEY,
+  name             TEXT,                   -- nome sugerido (pode vir vazio se a IA não identificou)
+  phone            TEXT NOT NULL,
+  plan             TEXT,
+  due_date         TEXT,                   -- YYYY-MM-DD, pode vir nulo
+  source_messages  TEXT,                   -- JSON com trechos que geraram a sugestão
+  status           TEXT DEFAULT 'pending', -- pending | approved | rejected
+  reviewed_at      TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ DEFAULT now()
+);
+
 -- Log de lembretes de vencimento enviados (evita duplicatas)
 CREATE TABLE IF NOT EXISTS renewal_notifications (
   id         SERIAL PRIMARY KEY,
@@ -71,6 +84,8 @@ CREATE INDEX IF NOT EXISTS idx_clients_phone    ON clients(phone);
 CREATE INDEX IF NOT EXISTS idx_clients_due_date ON clients(due_date, is_active);
 CREATE INDEX IF NOT EXISTS idx_faq_active       ON faq(is_active);
 CREATE INDEX IF NOT EXISTS idx_candidates_status ON faq_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_client_candidates_status ON client_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_client_candidates_phone  ON client_candidates(phone);
 CREATE INDEX IF NOT EXISTS idx_renewal_client   ON renewal_notifications(client_id, due_date);
 CREATE INDEX IF NOT EXISTS idx_messages_phone   ON messages_log(phone, sent_at);
 

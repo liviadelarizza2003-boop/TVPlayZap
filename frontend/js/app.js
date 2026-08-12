@@ -220,10 +220,14 @@ const App = {
 
   async refreshTrainingBadge() {
     try {
-      const data = await api.get('/api/faq/candidates/count');
+      const [faqData, clientsData] = await Promise.all([
+        api.get('/api/faq/candidates/count'),
+        api.get('/api/clients/candidates/count'),
+      ]);
+      const total = (faqData?.count || 0) + (clientsData?.count || 0);
       const badge = document.getElementById('training-badge');
-      if (data?.count > 0) {
-        badge.textContent = data.count;
+      if (total > 0) {
+        badge.textContent = total;
         badge.classList.remove('hidden');
       } else {
         badge.classList.add('hidden');

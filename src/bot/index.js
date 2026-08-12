@@ -21,6 +21,7 @@ const {
 } = require('@whiskeysockets/baileys');
 
 const { handleMessage } = require('./messageHandler');
+const { ingestHistory } = require('./historyIngest');
 const { setSendMessage }  = require('../scheduler/renewalReminder');
 
 const DATA_DIR    = process.env.DATA_DIR || path.join(__dirname, '../../data');
@@ -84,6 +85,7 @@ async function connect() {
     printQRInTerminal: true, // fallback útil durante dev local
     generateHighQualityLinkPreview: false,
     getMessage: async () => undefined,
+    syncFullHistory: true, // sincroniza conversas antigas ao vincular (usado no onboarding de FAQ/clientes)
   });
 
   // ── Credenciais ────────────────────────────────────────────────────────────
@@ -130,6 +132,13 @@ async function connect() {
         setTimeout(connect, 2000);
       }
     }
+  });
+
+  // ── Histórico sincronizado (dispositivo recém-vinculado) ────────────────────
+  sock.ev.on('messaging-history.set', ({ messages, isLatest }) => {
+    ingestHistory(messages, isLatest).catch(err =>
+      console.error('[bot] Erro ao processar histórico:', err)
+    );
   });
 
   // ── Mensagens recebidas ────────────────────────────────────────────────────

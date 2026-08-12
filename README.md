@@ -62,9 +62,11 @@ O servidor sobe em `http://localhost:3200` (ou na porta definida em `PORT`). Ele
 
 ### 5. Primeiro acesso
 1. Abra `http://localhost:3200` e entre com a senha de `ADMIN_PASSWORD` (padrão do exemplo: `livia123`)
-2. Vá em **WhatsApp** (menu inferior) e escaneie o QR Code com o celular que vai atender (WhatsApp → Dispositivos Vinculados → Vincular dispositivo)
-3. Em **Treinar a Livia**, use "Analisar histórico de conversas" para gerar sugestões de FAQ a partir das mensagens recebidas (requer `GROQ_API_KEY`), ou cadastre respostas manualmente com o botão `+`
-4. Em **Clientes**, cadastre clientes com data de vencimento para ativar os lembretes automáticos
+2. Vá em **WhatsApp** (menu inferior) e escaneie o QR Code com o celular que vai atender (WhatsApp → Dispositivos Vinculados → Vincular dispositivo). Se esse número já tinha conversas antigas, o WhatsApp sincroniza parte desse histórico automaticamente (pode levar alguns minutos)
+3. Em **Treinar a Livia**, use "Analisar histórico de conversas" (aba "FAQ sugerido") para gerar sugestões de FAQ e "Extrair clientes do histórico" (aba "Clientes sugeridos") para identificar nome/plano/vencimento de clientes mencionados nas conversas antigas — ambos exigem `GROQ_API_KEY` e mensagens já sincronizadas em `messages_log`. Revise e aprove cada sugestão antes dela virar FAQ/cliente real — nada é criado automaticamente sem revisão
+4. Em **Clientes**, cadastre clientes manualmente com data de vencimento (ou aprove as sugestões do passo acima) para ativar os lembretes automáticos
+
+> **Privacidade**: a análise de histórico e a extração de clientes enviam o conteúdo das conversas (incluindo nomes e telefones) para a API do Groq processar. Isso já era verdade para o FAQ; agora vale também para o histórico completo sincronizado do WhatsApp.
 
 ---
 
@@ -83,10 +85,12 @@ livia-bot/
 │   │       └── config.js         ← configurações do negócio + stats do dashboard
 │   ├── bot/
 │   │   ├── index.js              ← conexão Baileys, QR Code via WebSocket, reconexão automática
-│   │   └── messageHandler.js     ← pipeline de mensagem recebida (horário → FAQ → fallback)
+│   │   ├── messageHandler.js     ← pipeline de mensagem recebida (horário → FAQ → fallback)
+│   │   └── historyIngest.js      ← grava no log o histórico sincronizado ao vincular o WhatsApp (uma vez só)
 │   ├── engine/
 │   │   ├── faqSearch.js          ← busca por similaridade/proximidade de tokens no FAQ
-│   │   └── historyAnalyzer.js    ← lê mensagens do log → agrupa via Groq → grava faq_candidates
+│   │   ├── historyAnalyzer.js    ← lê mensagens do log → agrupa via Groq → grava faq_candidates
+│   │   └── clientExtractor.js    ← agrupa mensagens por telefone → Groq extrai nome/plano/vencimento → grava client_candidates
 │   ├── db/
 │   │   ├── db.js                 ← wrapper async sobre `pg` (Postgres/Supabase)
 │   │   └── schema.sql            ← tabelas: clients, faq, faq_candidates, config, renewal_notifications, messages_log
