@@ -14,8 +14,8 @@
 const db           = require('../db/db');
 const { search }   = require('../engine/faqSearch');
 
-function getConfigValue(key) {
-  return db.get("SELECT value FROM config WHERE key = ?", [key])?.value || '';
+async function getConfigValue(key) {
+  return (await db.get('SELECT value FROM config WHERE key = ?', [key]))?.value || '';
 }
 
 function getMessageText(msg) {
@@ -31,9 +31,9 @@ function getMessageText(msg) {
   );
 }
 
-function isWorkingHours() {
-  const start = parseInt(getConfigValue('working_hours_start') || '9');
-  const end   = parseInt(getConfigValue('working_hours_end')   || '18');
+async function isWorkingHours() {
+  const start = parseInt((await getConfigValue('working_hours_start')) || '9');
+  const end   = parseInt((await getConfigValue('working_hours_end'))   || '18');
   const now   = new Date();
   const hour  = now.getHours();
   return hour >= start && hour < end;
@@ -58,23 +58,23 @@ async function handleMessage(msg, sendMessage) {
   const phone = jid.replace('@s.whatsapp.net', '');
 
   // Grava mensagem inbound no log
-  db.run(
+  await db.run(
     `INSERT INTO messages_log (phone, direction, body) VALUES (?, 'inbound', ?)`,
     [phone, text]
   );
 
   // ── Fora do horário ────────────────────────────────────────────────────────
-  if (!isWorkingHours()) {
-    const startH = getConfigValue('working_hours_start') || '9';
-    const endH   = getConfigValue('working_hours_end')   || '18';
+  if (!(await isWorkingHours())) {
+    const startH = (await getConfigValue('working_hours_start')) || '9';
+    const endH   = (await getConfigValue('working_hours_end'))   || '18';
     const offMsg = renderTemplate(
-      getConfigValue('off_hours_message') ||
+      (await getConfigValue('off_hours_message')) ||
         'Olá! Nosso horário de atendimento é das {start}h às {end}h. Em breve retornamos! 😊',
       { start: startH, end: endH }
     );
 
     await sendMessage(jid, offMsg);
-    db.run(
+    await db.run(
       `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, 'off_hours')`,
       [phone, offMsg]
     );
@@ -82,11 +82,11 @@ async function handleMessage(msg, sendMessage) {
   }
 
   // ── Busca no FAQ ───────────────────────────────────────────────────────────
-  const match = search(text);
+  const match = await search(text);
 
   if (match) {
     await sendMessage(jid, match.answer);
-    db.run(
+    await db.run(
       `INSERT INTO messages_log (phone, direction, body, answered_by, faq_id, confidence)
        VALUES (?, 'outbound', ?, 'faq', ?, ?)`,
       [phone, match.answer, match.faqId, match.confidence]
@@ -95,11 +95,11 @@ async function handleMessage(msg, sendMessage) {
   }
 
   // ── Fallback ───────────────────────────────────────────────────────────────
-  const fallback = getConfigValue('fallback_message') ||
+  const fallback = (await getConfigValue('fallback_message')) ||
     'Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!';
 
   await sendMessage(jid, fallback);
-  db.run(
+  await db.run(
     `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, 'fallback')`,
     [phone, fallback]
   );

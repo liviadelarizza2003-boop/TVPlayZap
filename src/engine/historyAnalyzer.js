@@ -43,8 +43,8 @@ function normalize(text) {
 }
 
 /** Filtra e deduplica mensagens inbound do log */
-function collectUniqueMessages() {
-  const rows = db.all(
+async function collectUniqueMessages() {
+  const rows = await db.all(
     `SELECT body FROM messages_log
      WHERE direction = 'inbound' AND body IS NOT NULL AND body != ''
      ORDER BY sent_at`
@@ -69,7 +69,7 @@ async function askGroqForFaqSuggestions(messages) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY não configurada no .env');
 
-  const businessName = db.get("SELECT value FROM config WHERE key = 'business_name'")?.value || 'o negócio';
+  const businessName = (await db.get("SELECT value FROM config WHERE key = 'business_name'"))?.value || 'o negócio';
 
   const listaMsgs = messages.map((m, i) => `[${i}] ${m}`).join('\n');
 
@@ -145,7 +145,7 @@ async function runAnalysis(extraMessages = []) {
   analysisState = { running: true, total: 0, processed: 0, generated: 0, error: null, finishedAt: null };
 
   try {
-    const fromLog    = collectUniqueMessages();
+    const fromLog    = await collectUniqueMessages();
     const allMsgs    = [...new Set([...fromLog, ...extraMessages.filter(m => m?.trim().length > 5)])];
 
     analysisState.total = allMsgs.length;
@@ -170,7 +170,7 @@ async function runAnalysis(extraMessages = []) {
             .filter(idx => idx >= 0 && idx < batch.length)
             .map(idx => batch[idx]);
 
-          db.run(
+          await db.run(
             `INSERT INTO faq_candidates (question, answer, source_messages)
              VALUES (?, ?, ?)`,
             [s.question.trim(), s.answer.trim(), JSON.stringify(sourceMsgs)]

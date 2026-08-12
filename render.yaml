@@ -12,6 +12,8 @@ services:
         value: America/Sao_Paulo
       - key: JWT_SECRET
         generateValue: true
+      - key: DATABASE_URL
+        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: BUSINESS_NAME

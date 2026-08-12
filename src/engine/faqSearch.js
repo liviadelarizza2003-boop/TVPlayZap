@@ -93,8 +93,8 @@ function scoreFaqItem(message, faqItem) {
  * @param {string} message
  * @param {number} [minConfidence=0.75]
  */
-function search(message, minConfidence = 0.75) {
-  const items = db.all('SELECT * FROM faq WHERE is_active = 1');
+async function search(message, minConfidence = 0.75) {
+  const items = await db.all('SELECT * FROM faq WHERE is_active = 1');
   if (items.length === 0) return null;
 
   let best = null;
@@ -109,7 +109,7 @@ function search(message, minConfidence = 0.75) {
   }
 
   if (bestResult.score >= minConfidence) {
-    db.run('UPDATE faq SET usage_count = usage_count + 1 WHERE id = ?', [best.id]);
+    await db.run('UPDATE faq SET usage_count = usage_count + 1 WHERE id = ?', [best.id]);
     return { answer: best.answer, confidence: bestResult.score, faqId: best.id };
   }
 
@@ -121,8 +121,8 @@ function search(message, minConfidence = 0.75) {
  * @param {string} message
  * @param {number} [limit=5]
  */
-function topMatches(message, limit = 5) {
-  const items = db.all('SELECT * FROM faq WHERE is_active = 1');
+async function topMatches(message, limit = 5) {
+  const items = await db.all('SELECT * FROM faq WHERE is_active = 1');
   return items
     .map(item => ({ item, result: scoreFaqItem(message, item) }))
     .filter(({ result }) => result.score > 0)

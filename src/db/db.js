@@ -1,53 +1,66 @@
 'use strict';
-const path   = require('path');
-const fs     = require('fs');
-// node:sqlite está embutido no Node.js 22.5+ — sem compilação nativa necessária
-const { DatabaseSync } = require('node:sqlite');
+const fs   = require('fs');
+const path = require('path');
+const { Pool } = require('pg');
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
-fs.mkdirSync(DATA_DIR, { recursive: true });
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL não configurada — defina a connection string do Postgres (Supabase) no .env');
+}
 
-const DB_PATH = path.join(DATA_DIR, 'livia.db');
-const db = new DatabaseSync(DB_PATH);
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 5,
+});
 
-// WAL mode: leituras não bloqueiam escritas (importante com o Baileys
-// gravando mensagens ao mesmo tempo que o painel faz queries).
-db.exec("PRAGMA journal_mode = WAL");
-db.exec("PRAGMA foreign_keys = ON");
+pool.on('error', (err) => {
+  console.error('[db] Erro inesperado no pool do Postgres:', err.message);
+});
 
-// Roda o schema na inicialização — CREATE TABLE IF NOT EXISTS é idempotente
-const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-db.exec(schema);
-
-// ─── API helper (mesma interface do wrapper anterior) ────────────────────────
+/** Converte placeholders "?" (estilo SQLite, usado no resto do código) para "$1, $2, ..." (estilo Postgres) */
+function toPgSql(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => `$${++i}`);
+}
 
 /** SELECT múltiplas linhas */
-function all(sql, params = []) {
-  return db.prepare(sql).all(...params);
+async function all(sql, params = []) {
+  const result = await pool.query(toPgSql(sql), params);
+  return result.rows;
 }
 
 /** SELECT uma linha */
-function get(sql, params = []) {
-  return db.prepare(sql).get(...params);
+async function get(sql, params = []) {
+  const result = await pool.query(toPgSql(sql), params);
+  return result.rows[0];
 }
 
-/** INSERT / UPDATE / DELETE */
-function run(sql, params = []) {
-  return db.prepare(sql).run(...params);
+/** INSERT / UPDATE / DELETE — retorna o resultado bruto do pg (use `.rows[0].id` com RETURNING id) */
+async function run(sql, params = []) {
+  return pool.query(toPgSql(sql), params);
 }
 
-/** Executa dentro de uma transação atômica */
-function transaction(fn) {
-  db.exec('BEGIN');
+/** Executa uma função dentro de uma transação atômica, usando uma conexão dedicada do pool */
+async function transaction(fn) {
+  const client = await pool.connect();
   try {
-    const result = fn();
-    db.exec('COMMIT');
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
     return result;
   } catch (e) {
-    db.exec('ROLLBACK');
+    await client.query('ROLLBACK');
     throw e;
+  } finally {
+    client.release();
   }
 }
 
-module.exports = { all, get, run, transaction, _db: db };
+/** Cria as tabelas (idempotente) — chamado uma vez na inicialização do servidor */
+async function initSchema() {
+  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+  await pool.query(schema);
+}
 
+module.exports = { all, get, run, transaction, initSchema, pool };

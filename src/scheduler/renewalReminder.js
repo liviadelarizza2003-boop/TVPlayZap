@@ -18,8 +18,8 @@ function setSendMessage(fn) {
   _sendMessage = fn;
 }
 
-function getConfigValue(key) {
-  return db.get("SELECT value FROM config WHERE key = ?", [key])?.value || '';
+async function getConfigValue(key) {
+  return (await db.get('SELECT value FROM config WHERE key = ?', [key]))?.value || '';
 }
 
 function formatDate(dateStr) {
@@ -45,7 +45,7 @@ async function checkAndSend() {
   const targetDate = target.toISOString().split('T')[0];
 
   // Clientes com vencimento em 3 dias que ainda não receberam lembrete para esta data
-  const clients = db.all(
+  const clients = await db.all(
     `SELECT c.* FROM clients c
      WHERE c.due_date = ?
        AND c.is_active = 1
@@ -56,7 +56,7 @@ async function checkAndSend() {
     [targetDate, targetDate]
   );
 
-  const template = getConfigValue('reminder_message') ||
+  const template = (await getConfigValue('reminder_message')) ||
     'Olá, {name}! 👋 Seu plano *{plan}* vence dia *{due_date}*. Quer renovar? 😊';
 
   const results = { sent: 0, skipped: 0, errors: [] };
@@ -73,7 +73,7 @@ async function checkAndSend() {
     try {
       await _sendMessage(whatsappId, msg);
 
-      db.run(
+      await db.run(
         `INSERT INTO renewal_notifications (client_id, due_date, status) VALUES (?, ?, 'sent')`,
         [client.id, client.due_date]
       );
@@ -83,7 +83,7 @@ async function checkAndSend() {
     } catch (err) {
       console.error(`[renewalReminder] Falhou ao enviar para ${client.name}:`, err.message);
 
-      db.run(
+      await db.run(
         `INSERT INTO renewal_notifications (client_id, due_date, status) VALUES (?, ?, 'failed')`,
         [client.id, client.due_date]
       );

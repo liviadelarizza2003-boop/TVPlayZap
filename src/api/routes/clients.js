@@ -1,13 +1,14 @@
 'use strict';
-const express = require('express');
-const db      = require('../../db/db');
+const express      = require('express');
+const db           = require('../../db/db');
 const { requireAuth } = require('./auth');
+const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
 router.use(requireAuth);
 
 /** GET /api/clients — lista todos os clientes */
-router.get('/', (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   const { search, active } = req.query;
   let sql    = 'SELECT * FROM clients WHERE 1=1';
   const params = [];
@@ -23,35 +24,35 @@ router.get('/', (req, res) => {
   }
   sql += ' ORDER BY due_date ASC, name ASC';
 
-  res.json(db.all(sql, params));
-});
+  res.json(await db.all(sql, params));
+}));
 
 /** GET /api/clients/expiring — clientes vencendo em N dias (padrão: 7) */
-router.get('/expiring', (req, res) => {
+router.get('/expiring', asyncHandler(async (req, res) => {
   const days = parseInt(req.query.days || '7');
   const today  = new Date().toISOString().split('T')[0];
   const future = new Date();
   future.setDate(future.getDate() + days);
   const futureDate = future.toISOString().split('T')[0];
 
-  const rows = db.all(
+  const rows = await db.all(
     `SELECT * FROM clients
      WHERE due_date BETWEEN ? AND ? AND is_active = 1
      ORDER BY due_date ASC`,
     [today, futureDate]
   );
   res.json(rows);
-});
+}));
 
 /** GET /api/clients/:id */
-router.get('/:id', (req, res) => {
-  const row = db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);
+router.get('/:id', asyncHandler(async (req, res) => {
+  const row = await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);
   if (!row) return res.status(404).json({ error: 'Cliente não encontrado' });
   res.json(row);
-});
+}));
 
 /** POST /api/clients — cria cliente */
-router.post('/', (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   const { name, phone, plan, due_date, notes } = req.body || {};
   if (!name || !phone) return res.status(400).json({ error: 'Nome e telefone são obrigatórios' });
 
@@ -59,28 +60,28 @@ router.post('/', (req, res) => {
   const phoneCleaned = phone.replace(/\D/g, '');
 
   try {
-    const result = db.run(
+    const result = await db.run(
       `INSERT INTO clients (name, phone, plan, due_date, notes)
-       VALUES (?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?) RETURNING id`,
       [name.trim(), phoneCleaned, plan?.trim() || null, due_date || null, notes?.trim() || null]
     );
-    const created = db.get('SELECT * FROM clients WHERE id = ?', [result.lastInsertRowid]);
+    const created = await db.get('SELECT * FROM clients WHERE id = ?', [result.rows[0].id]);
     res.status(201).json(created);
   } catch (err) {
-    if (err.message?.includes('UNIQUE')) {
+    if (err.code === '23505') { // unique_violation no Postgres
       return res.status(409).json({ error: 'Já existe um cliente com este telefone' });
     }
     throw err;
   }
-});
+}));
 
 /** PATCH /api/clients/:id — atualiza cliente */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', asyncHandler(async (req, res) => {
   const { name, phone, plan, due_date, notes, is_active } = req.body || {};
-  const existing = db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);
+  const existing = await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Cliente não encontrado' });
 
-  db.run(
+  await db.run(
     `UPDATE clients SET
        name       = COALESCE(?, name),
        phone      = COALESCE(?, phone),
@@ -88,7 +89,7 @@ router.patch('/:id', (req, res) => {
        due_date   = COALESCE(?, due_date),
        notes      = COALESCE(?, notes),
        is_active  = COALESCE(?, is_active),
-       updated_at = datetime('now','localtime')
+       updated_at = now()
      WHERE id = ?`,
     [
       name?.trim()       || null,
@@ -101,15 +102,15 @@ router.patch('/:id', (req, res) => {
     ]
   );
 
-  res.json(db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]));
-});
+  res.json(await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]));
+}));
 
 /** DELETE /api/clients/:id — remove cliente */
-router.delete('/:id', (req, res) => {
-  const existing = db.get('SELECT id FROM clients WHERE id = ?', [req.params.id]);
+router.delete('/:id', asyncHandler(async (req, res) => {
+  const existing = await db.get('SELECT id FROM clients WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Cliente não encontrado' });
-  db.run('DELETE FROM clients WHERE id = ?', [req.params.id]);
+  await db.run('DELETE FROM clients WHERE id = ?', [req.params.id]);
   res.json({ ok: true });
-});
+}));
 
 module.exports = router;

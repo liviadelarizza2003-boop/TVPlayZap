@@ -13,8 +13,8 @@ conversas com ajuda de IA (Groq).
 | Componente | Tecnologia |
 |---|---|
 | Bot WhatsApp | [Baileys](https://github.com/WhiskeySockets/Baileys) |
-| Backend | Node.js 22.5+ (usa `node:sqlite` nativo) + Express |
-| Banco de dados | SQLite (arquivo local, `data/livia.db`) |
+| Backend | Node.js 18+ + Express |
+| Banco de dados | PostgreSQL ([Supabase](https://supabase.com), plano free) via `pg` |
 | IA (análise de histórico) | Groq API (`llama-3.3-70b-versatile`) |
 | Agendamento | node-cron |
 | Painel | PWA — HTML/CSS/JS puro, sem framework/build step |
@@ -25,7 +25,8 @@ conversas com ajuda de IA (Groq).
 ## Rodando localmente
 
 ### 1. Pré-requisitos
-- Node.js **22.5 ou superior** (o projeto usa o módulo nativo `node:sqlite`, não precisa instalar SQLite separado)
+- Node.js **18 ou superior**
+- Um projeto Postgres gratuito no [Supabase](https://supabase.com) (New Project → Project Settings → Database → Connection String → aba "URI", opção "Session pooler")
 
 ### 2. Instalar dependências
 ```bash
@@ -40,6 +41,7 @@ Edite o `.env` e ajuste pelo menos:
 
 | Variável | Descrição |
 |---|---|
+| `DATABASE_URL` | connection string do Postgres (Supabase) — use a versão "Session pooler" (compatível com IPv4) |
 | `JWT_SECRET` | string longa e aleatória — usada para assinar o token de login |
 | `ADMIN_PASSWORD` | senha inicial do painel (pode ser trocada depois, dentro do painel) |
 | `RECOVERY_KEY` | chave de recuperação usada em "Esqueci minha senha" na tela de login, caso a senha do painel seja esquecida — guarde em local seguro |
@@ -86,7 +88,7 @@ livia-bot/
 │   │   ├── faqSearch.js          ← busca por similaridade/proximidade de tokens no FAQ
 │   │   └── historyAnalyzer.js    ← lê mensagens do log → agrupa via Groq → grava faq_candidates
 │   ├── db/
-│   │   ├── db.js                 ← wrapper sobre `node:sqlite` (WAL mode)
+│   │   ├── db.js                 ← wrapper async sobre `pg` (Postgres/Supabase)
 │   │   └── schema.sql            ← tabelas: clients, faq, faq_candidates, config, renewal_notifications, messages_log
 │   └── scheduler/
 │       └── renewalReminder.js    ← cron diário (9h) de lembretes de vencimento
@@ -103,10 +105,10 @@ livia-bot/
 │       ├── training.js           ← "Treinar a Livia" (sugestões da IA + FAQ ativo)
 │       ├── qrcode.js             ← tela de conexão WhatsApp (WebSocket + fallback polling)
 │       └── config.js             ← configurações, FAQ manual, ferramentas (senha, teste de lembrete)
-├── data/                         ← SQLite (`livia.db`) + sessão do Baileys (gitignored)
+├── data/                         ← sessão do WhatsApp (Baileys), gitignored — efêmero no Render free
 ├── .env.example
 ├── .gitignore
-├── render.yaml                   ← deploy Render (free tier, disco persistente em /data)
+├── render.yaml                   ← deploy Render (free tier, sem disco — dados ficam no Supabase)
 ├── package.json
 └── implementation_plan.md        ← histórico de design e decisões técnicas
 ```
@@ -115,13 +117,15 @@ livia-bot/
 
 ## Deploy no Render
 
-O `render.yaml` já está pronto (`render blueprint`):
+O `render.yaml` já está pronto (`render blueprint` — New → Blueprint no dashboard do Render):
 - Build: `npm install` / Start: `npm start`
-- Disco persistente de 1GB montado em `/data` (guarda o SQLite e a sessão do WhatsApp entre deploys)
+- Plano free do Render (sem disco — não é suportado no free tier)
+- Clientes, FAQ e configurações ficam no Postgres do Supabase (`DATABASE_URL`), que sobrevive a restarts/redeploys
+- A sessão de login do WhatsApp fica no disco efêmero do serviço — se o Render reiniciar o container (hibernação por inatividade, redeploy, manutenção), é preciso escanear o QR Code de novo. Considere um pinger (ex: [cron-job.org](https://cron-job.org)) batendo na URL a cada ~10 min pra reduzir a hibernação por inatividade
 - `JWT_SECRET` é gerado automaticamente pelo Render
-- `GROQ_API_KEY`, `BUSINESS_NAME`, `OWNER_PHONE`, `ADMIN_PASSWORD` precisam ser preenchidos manualmente no painel do Render (marcados como `sync: false`)
+- `DATABASE_URL`, `GROQ_API_KEY`, `BUSINESS_NAME`, `OWNER_PHONE`, `ADMIN_PASSWORD`, `RECOVERY_KEY` precisam ser preenchidos manualmente no painel do Render (marcados como `sync: false`)
 
-Depois do deploy, acesse a URL do serviço, faça login e escaneie o QR Code novamente (sessão do WhatsApp é por ambiente).
+Depois do deploy, acesse a URL do serviço e faça login normalmente — clientes e FAQ já estarão lá mesmo que o WhatsApp precise reconectar.
 
 ---
 
@@ -132,6 +136,8 @@ Depois do deploy, acesse a URL do serviço, faça login e escaneie o QR Code nov
 - **"Analisar histórico" não gera nenhuma sugestão** — confira se `GROQ_API_KEY` está preenchida no `.env` e se já existem mensagens recebidas registradas em `messages_log` (o bot precisa ter ficado conectado recebendo mensagens antes).
 - **Esqueci a senha do painel** — na tela de login, clique em "Esqueci minha senha" e informe a `RECOVERY_KEY` configurada no `.env` (ou nas variáveis de ambiente do Render) junto com a nova senha.
 - **QR Code não aparece** — confira os logs do servidor; se a sessão anterior ficou corrompida, apague a pasta `data/session/` e reinicie.
+- **Erro "DATABASE_URL não configurada" ao iniciar** — falta preencher `DATABASE_URL` no `.env` (local) ou nas variáveis de ambiente do Render (produção) com a connection string do Supabase.
+- **Erro de conexão `ENOTFOUND db.xxx.supabase.co`** — a conexão direta do Supabase exige IPv6; use a string do **"Session pooler"** (host `aws-0-<região>.pooler.supabase.com`), que funciona em IPv4.
 
 ---
 

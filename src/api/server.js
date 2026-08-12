@@ -19,6 +19,8 @@ const express      = require('express');
 const cookieParser = require('cookie-parser');
 const { WebSocketServer } = require('ws');
 
+const db = require('../db/db');
+
 // Rotas
 const authRouter      = require('./routes/auth');
 const clientsRouter   = require('./routes/clients');
@@ -69,16 +71,29 @@ wss.on('connection', (ws) => {
   bot.addQrListener(ws);
 });
 
-// ── Inicialização ──────────────────────────────────────────────────────────
-server.listen(PORT, async () => {
-  console.log(`\n🌸 Livia Bot rodando em http://localhost:${PORT}\n`);
-
-  // Inicia bot WhatsApp (não bloqueante)
-  bot.connect().catch(err => console.error('[server] Erro ao iniciar bot:', err));
-
-  // Inicia cron de lembretes
-  startScheduler();
+// ── Tratamento de erros da API (deve ser o último middleware) ──────────────
+app.use((err, _req, res, _next) => {
+  console.error('[api] Erro:', err);
+  res.status(500).json({ error: err.message || 'Erro interno' });
 });
+
+// ── Inicialização ──────────────────────────────────────────────────────────
+db.initSchema()
+  .then(() => {
+    server.listen(PORT, async () => {
+      console.log(`\n🌸 Livia Bot rodando em http://localhost:${PORT}\n`);
+
+      // Inicia bot WhatsApp (não bloqueante)
+      bot.connect().catch(err => console.error('[server] Erro ao iniciar bot:', err));
+
+      // Inicia cron de lembretes
+      startScheduler();
+    });
+  })
+  .catch(err => {
+    console.error('[server] Falha ao inicializar banco de dados:', err);
+    process.exit(1);
+  });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
