@@ -13,6 +13,7 @@
 
 const db           = require('../db/db');
 const { search }   = require('../engine/faqSearch');
+const { resolvePhone } = require('./jidUtils');
 
 async function getConfigValue(key) {
   return (await db.get('SELECT value FROM config WHERE key = ?', [key]))?.value || '';
@@ -47,15 +48,16 @@ function renderTemplate(template, vars) {
  * Processa uma mensagem recebida.
  * @param {object} msg — objeto de mensagem do Baileys
  * @param {Function} sendMessage — função (jid, text) => Promise
+ * @param {object} [sock] — socket do Baileys (usado pra resolver telefone de contatos @lid)
  */
-async function handleMessage(msg, sendMessage) {
+async function handleMessage(msg, sendMessage, sock) {
   const jid  = msg.key.remoteJid;
   const text = getMessageText(msg).trim();
 
   // Ignora mensagens sem texto (stickers, contatos, etc.)
   if (!text) return;
 
-  const phone = jid.replace('@s.whatsapp.net', '');
+  const phone = await resolvePhone(jid, msg.key, sock);
 
   // Grava mensagem inbound no log
   await db.run(

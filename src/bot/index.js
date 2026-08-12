@@ -22,6 +22,7 @@ const {
 
 const { handleMessage } = require('./messageHandler');
 const { ingestHistory } = require('./historyIngest');
+const { reconcileLidPhones } = require('./lidReconcile');
 const { setSendMessage }  = require('../scheduler/renewalReminder');
 
 const DATA_DIR    = process.env.DATA_DIR || path.join(__dirname, '../../data');
@@ -131,6 +132,11 @@ async function connect() {
       qrData    = null;
       console.log('[bot] ✅ WhatsApp conectado!');
       broadcastToListeners({ type: 'connected' });
+
+      // Corrige telefones "@lid" que ficaram salvos antes de resolvermos pro número real
+      reconcileLidPhones(sock).catch(err =>
+        console.error('[bot] Erro ao reconciliar telefones @lid:', err)
+      );
     }
 
     if (connection === 'close') {
@@ -153,7 +159,7 @@ async function connect() {
 
   // ── Histórico sincronizado (dispositivo recém-vinculado) ────────────────────
   sock.ev.on('messaging-history.set', ({ messages, isLatest }) => {
-    ingestHistory(messages, isLatest).catch(err =>
+    ingestHistory(messages, isLatest, sock).catch(err =>
       console.error('[bot] Erro ao processar histórico:', err)
     );
   });
@@ -169,7 +175,7 @@ async function connect() {
       if (msg.key.remoteJid?.endsWith('@g.us')) continue; // grupos
 
       try {
-        await handleMessage(msg, sendMessage);
+        await handleMessage(msg, sendMessage, sock);
       } catch (err) {
         console.error('[bot] Erro ao processar mensagem:', err);
       }

@@ -13,6 +13,7 @@
 const { isJidBroadcast } = require('@whiskeysockets/baileys');
 const db = require('../db/db');
 const { getMessageText } = require('./messageHandler');
+const { resolvePhone } = require('./jidUtils');
 
 async function alreadySynced() {
   const row = await db.get("SELECT value FROM config WHERE key = 'history_synced'");
@@ -28,8 +29,9 @@ async function markSynced() {
 /**
  * @param {object[]} messages — lote de mensagens antigas do evento 'messaging-history.set'
  * @param {boolean} isLatest — true no último lote da sincronização
+ * @param {object} [sock] — socket do Baileys (usado pra resolver telefone de contatos @lid)
  */
-async function ingestHistory(messages, isLatest) {
+async function ingestHistory(messages, isLatest, sock) {
   if (await alreadySynced()) return;
 
   let saved = 0;
@@ -40,7 +42,7 @@ async function ingestHistory(messages, isLatest) {
     const text = getMessageText(msg).trim();
     if (!text) continue;
 
-    const phone     = jid.replace('@s.whatsapp.net', '');
+    const phone     = await resolvePhone(jid, msg.key, sock);
     const direction = msg.key.fromMe ? 'outbound' : 'inbound';
     const sentAt    = msg.messageTimestamp
       ? new Date(Number(msg.messageTimestamp) * 1000).toISOString()
