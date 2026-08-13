@@ -11,16 +11,24 @@ CREATE TABLE IF NOT EXISTS config (
 
 -- Clientes com controle de vencimento de plano
 CREATE TABLE IF NOT EXISTS clients (
-  id             SERIAL PRIMARY KEY,
-  name           TEXT NOT NULL,
-  phone          TEXT NOT NULL UNIQUE,   -- formato: 5511999999999
-  plan           TEXT,                   -- nome do plano/serviço
-  due_date       TEXT,                   -- YYYY-MM-DD
-  notes          TEXT,
-  is_active      INTEGER DEFAULT 1,
-  created_at     TIMESTAMPTZ DEFAULT now(),
-  updated_at     TIMESTAMPTZ DEFAULT now()
+  id                   SERIAL PRIMARY KEY,
+  name                 TEXT NOT NULL,
+  phone                TEXT NOT NULL UNIQUE,   -- formato: 5511999999999
+  plan                 TEXT,                   -- nome do plano/serviço
+  due_date             TEXT,                   -- YYYY-MM-DD
+  notes                TEXT,
+  is_active            INTEGER DEFAULT 1,
+  is_trial             INTEGER DEFAULT 0,      -- 1 enquanto está no período de teste de 24h
+  trial_started_at     TIMESTAMPTZ,            -- quando o trial começou
+  trial_message_sent   INTEGER DEFAULT 0,      -- evita reenviar a mensagem de fim de trial
+  created_at           TIMESTAMPTZ DEFAULT now(),
+  updated_at           TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migração pra bancos já existentes (CREATE TABLE acima é ignorado se a tabela já existe)
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS is_trial           INTEGER DEFAULT 0;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS trial_started_at   TIMESTAMPTZ;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS trial_message_sent INTEGER DEFAULT 0;
 
 -- FAQ — respostas automáticas
 CREATE TABLE IF NOT EXISTS faq (
@@ -93,6 +101,7 @@ CREATE TABLE IF NOT EXISTS messages_log (
 -- Índices de performance
 CREATE INDEX IF NOT EXISTS idx_clients_phone    ON clients(phone);
 CREATE INDEX IF NOT EXISTS idx_clients_due_date ON clients(due_date, is_active);
+CREATE INDEX IF NOT EXISTS idx_clients_trial     ON clients(is_trial, trial_message_sent, trial_started_at);
 CREATE INDEX IF NOT EXISTS idx_faq_active       ON faq(is_active);
 CREATE INDEX IF NOT EXISTS idx_candidates_status ON faq_candidates(status);
 CREATE INDEX IF NOT EXISTS idx_client_candidates_status ON client_candidates(status);
@@ -109,5 +118,7 @@ INSERT INTO config (key, value) VALUES
   ('fallback_message',    'Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!'),
   ('off_hours_message',   'Olá! Nosso horário de atendimento é das {start}h às {end}h. Retornaremos em breve! 😊'),
   ('reminder_message',    'Olá, {name}! 👋 Passando pra lembrar que seu plano *{plan}* vence dia *{due_date}*. Quer renovar? É só me avisar! 😊'),
-  ('ai_disclosure_message', 'Sou a Eva, assistente virtual da TV Play! 😊 Posso te ajudar por aqui, e se precisar de algo mais específico chamo a equipe pra você.')
+  ('ai_disclosure_message', 'Sou a Eva, assistente virtual da TV Play! 😊 Posso te ajudar por aqui, e se precisar de algo mais específico chamo a equipe pra você.'),
+  ('renewal_cycle_days',  '30'),
+  ('trial_message',       'E aí {name}! Tudo bem? Seu período de teste de 24h terminou — gostou? Quer assinar o plano? 😊')
 ON CONFLICT (key) DO NOTHING;

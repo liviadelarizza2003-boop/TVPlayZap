@@ -73,6 +73,11 @@ const SettingsView = {
         <input id="cfg-owner-phone" class="form-input" type="tel"
                value="${_esc(c.owner_phone || '')}" placeholder="5511999999999">
 
+        <p class="card-label" style="margin-top:16px">Ciclo de renovação (dias)</p>
+        <p class="form-hint">Usado no botão "Renovar agora" — define o vencimento como hoje + esse número de dias.</p>
+        <input id="cfg-renewal-cycle" class="form-input" type="number" min="1"
+               value="${_esc(c.renewal_cycle_days || '30')}">
+
         <p class="card-label" style="margin-top:16px">Horário de atendimento</p>
         <div style="display:flex;gap:12px;align-items:center">
           <div style="flex:1">
@@ -104,6 +109,7 @@ const SettingsView = {
           owner_phone:         document.getElementById('cfg-owner-phone').value.replace(/\D/g,''),
           working_hours_start: document.getElementById('cfg-hours-start').value,
           working_hours_end:   document.getElementById('cfg-hours-end').value,
+          renewal_cycle_days:  document.getElementById('cfg-renewal-cycle').value,
         });
         // Atualiza nome no header
         const name = document.getElementById('cfg-business-name').value.trim();
@@ -147,6 +153,11 @@ const SettingsView = {
         <textarea id="cfg-ai-disclosure" class="form-input" rows="3"
           placeholder="Sou a Eva, assistente virtual da TV Play! 😊">${_esc(c.ai_disclosure_message || '')}</textarea>
 
+        <p class="card-label" style="margin-top:20px">Mensagem de fim de trial (24h)</p>
+        <p class="form-hint">Enviada automaticamente 24h depois de iniciar o trial de um cliente. Use <code>{name}</code> e <code>{plan}</code>.</p>
+        <textarea id="cfg-trial-message" class="form-input" rows="3"
+          placeholder="Seu período de teste terminou...">${_esc(c.trial_message || '')}</textarea>
+
         <button id="cfg-save-messages" class="btn btn-primary" style="margin-top:20px;width:100%">
           💾 Salvar mensagens
         </button>
@@ -163,6 +174,7 @@ const SettingsView = {
           off_hours_message:     document.getElementById('cfg-offhours').value.trim(),
           reminder_message:      document.getElementById('cfg-reminder').value.trim(),
           ai_disclosure_message: document.getElementById('cfg-ai-disclosure').value.trim(),
+          trial_message:         document.getElementById('cfg-trial-message').value.trim(),
         });
         this._cfg = await api.get('/api/config') || this._cfg;
         showToast('Mensagens salvas!');
@@ -372,6 +384,18 @@ const SettingsView = {
         <div id="tool-reminder-result" style="display:none;margin-top:12px"></div>
       </div>
 
+      <!-- Testar fim de trial -->
+      <div class="card">
+        <p class="card-label">👤 Testar mensagem de fim de trial</p>
+        <p class="form-hint" style="margin-bottom:12px">
+          Dispara agora a checagem de clientes em trial há mais de 24h que ainda não receberam a mensagem.
+        </p>
+        <button id="tool-test-trial" class="btn btn-primary" style="width:100%">
+          ▶️ Disparar checagem agora
+        </button>
+        <div id="tool-trial-result" style="display:none;margin-top:12px"></div>
+      </div>
+
       <!-- Trocar senha -->
       <div class="card">
         <p class="card-label">🔑 Trocar senha do painel</p>
@@ -432,6 +456,39 @@ const SettingsView = {
       } finally {
         btn.disabled = false;
         btn.textContent = '▶️ Disparar lembretes agora';
+      }
+    };
+
+    // Testar fim de trial
+    document.getElementById('tool-test-trial').onclick = async () => {
+      const btn    = document.getElementById('tool-test-trial');
+      const result = document.getElementById('tool-trial-result');
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+      result.style.display = 'none';
+      try {
+        const r = await api.post('/api/config/test-trial', {});
+        result.style.display = 'block';
+        if (r?.sent > 0 || r?.errors?.length > 0) {
+          const errHtml = r.errors?.length
+            ? `<p style="color:var(--red);margin-top:6px">⚠️ ${r.errors.length} erro(s): ${r.errors.map(e => e.client).join(', ')}</p>`
+            : '';
+          result.innerHTML = `
+            <div class="stat-card green" style="padding:12px 16px;margin:0">
+              <span>✅ ${r.sent} mensagem(ns) de trial enviada(s)${errHtml ? '' : '!'}</span>
+              ${errHtml}
+            </div>`;
+          showToast(`${r.sent} mensagem(ns) de trial enviada(s).`);
+        } else {
+          result.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:8px">
+            Nenhum cliente com trial completo de 24h no momento.
+          </p>`;
+        }
+      } catch (e) {
+        showToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '▶️ Disparar checagem agora';
       }
     };
 

@@ -23,6 +23,7 @@ const { ingestHistory } = require('./historyIngest');
 const { reconcileLidPhones } = require('./lidReconcile');
 const { useDbAuthState, clearDbAuthState } = require('./dbAuthState');
 const { setSendMessage }  = require('../scheduler/renewalReminder');
+const { setSendMessage: setTrialSendMessage } = require('../scheduler/trialFollowup');
 
 const silentLogger = pino({ level: 'silent' });
 
@@ -64,8 +65,9 @@ async function sendMessage(jid, text) {
   await sock.sendMessage(jid, { text });
 }
 
-// Exponha o sendMessage para o scheduler de lembretes
+// Exponha o sendMessage para os schedulers
 setSendMessage(sendMessage);
+setTrialSendMessage(sendMessage);
 
 /** Descarta a sessão atual e cria uma conexão nova do zero */
 async function resetSession() {

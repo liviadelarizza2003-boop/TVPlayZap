@@ -3,6 +3,7 @@ const express = require('express');
 const db      = require('../../db/db');
 const { requireAuth } = require('./auth');
 const { checkAndSend } = require('../../scheduler/renewalReminder');
+const { checkAndSend: checkAndSendTrial } = require('../../scheduler/trialFollowup');
 const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
@@ -11,6 +12,7 @@ router.use(requireAuth);
 const EDITABLE_KEYS = [
   'business_name', 'owner_phone', 'working_hours_start', 'working_hours_end',
   'fallback_message', 'off_hours_message', 'reminder_message', 'ai_disclosure_message',
+  'renewal_cycle_days', 'trial_message',
 ];
 
 /** GET /api/config */
@@ -71,6 +73,12 @@ router.get('/stats', asyncHandler(async (_req, res) => {
 /** POST /api/config/test-reminder — força envio de lembretes (teste manual) */
 router.post('/test-reminder', asyncHandler(async (_req, res) => {
   const result = await checkAndSend();
+  res.json(result);
+}));
+
+/** POST /api/config/test-trial — força envio de mensagens de fim de trial (teste manual) */
+router.post('/test-trial', asyncHandler(async (_req, res) => {
+  const result = await checkAndSendTrial();
   res.json(result);
 }));
 

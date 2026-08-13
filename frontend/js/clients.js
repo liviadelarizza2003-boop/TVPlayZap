@@ -79,7 +79,7 @@ const ClientsView = {
           <div class="list-item-name">${c.name}</div>
           <div class="list-item-sub">📱 ${c.phone}${c.plan ? ` · ${c.plan}` : ''}</div>
         </div>
-        ${dueBadge(c.due_date)}
+        ${c.is_trial ? '<span class="list-item-badge badge-soon">Em trial</span>' : dueBadge(c.due_date)}
       </div>`).join('');
   },
 
@@ -111,6 +111,24 @@ const ClientsView = {
           <label class="form-label">Observações</label>
           <textarea class="form-textarea" name="notes" placeholder="Notas internas...">${client?.notes || ''}</textarea>
         </div>
+        ${!isEdit ? `
+        <div class="form-group" style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" name="is_trial" id="cf-trial" value="1" style="width:18px;height:18px">
+          <label class="form-label" for="cf-trial" style="margin:0;text-transform:none;letter-spacing:normal">
+            Iniciar trial de 24h (envia mensagem perguntando se quer assinar depois de 24h)
+          </label>
+        </div>` : ''}
+        ${isEdit && client?.is_trial ? `
+        <div class="card" style="margin:0 0 18px;background:var(--bg-card-hover)">
+          <p class="text-sm" style="margin-bottom:10px">👤 Este cliente está em período de teste.</p>
+          <button type="button" class="btn btn-success btn-full" onclick="ClientsView.renewClient(${id})">
+            🔄 Assinou! Registrar renovação agora
+          </button>
+        </div>` : ''}
+        ${isEdit && !client?.is_trial ? `
+        <button type="button" class="btn btn-ghost btn-full" style="margin-bottom:18px" onclick="ClientsView.renewClient(${id})">
+          🔄 Renovar agora (define vencimento a partir de hoje)
+        </button>` : ''}
         <div class="flex gap-8 mt-16">
           ${isEdit ? `<button type="button" class="btn btn-danger" onclick="ClientsView.deleteClient(${id})">🗑 Remover</button>` : ''}
           <button type="submit" class="btn btn-primary" style="flex:1">${isEdit ? 'Salvar alterações' : 'Cadastrar cliente'}</button>
@@ -121,6 +139,7 @@ const ClientsView = {
     document.getElementById('client-form').onsubmit = async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target));
+      data.is_trial = !!data.is_trial;
       try {
         if (isEdit) {
           await api.patch(`/api/clients/${id}`, data);
@@ -135,6 +154,17 @@ const ClientsView = {
         showToast(err.message, 'error');
       }
     };
+  },
+
+  async renewClient(id) {
+    try {
+      await api.post(`/api/clients/${id}/renew`, {});
+      showToast('Renovação registrada! Vencimento atualizado. 🎉');
+      document.getElementById('overlay').click(); // fecha drawer
+      await this.loadClients();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
   },
 
   async deleteClient(id) {

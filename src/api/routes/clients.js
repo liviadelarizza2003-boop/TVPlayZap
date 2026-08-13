@@ -122,17 +122,18 @@ router.get('/:id', asyncHandler(async (req, res) => {
 
 /** POST /api/clients — cria cliente */
 router.post('/', asyncHandler(async (req, res) => {
-  const { name, phone, plan, due_date, notes } = req.body || {};
+  const { name, phone, plan, due_date, notes, is_trial } = req.body || {};
   if (!name || !phone) return res.status(400).json({ error: 'Nome e telefone são obrigatórios' });
 
   // Normaliza telefone: só dígitos, com código do país
   const phoneCleaned = phone.replace(/\D/g, '');
+  const startTrial = !!is_trial;
 
   try {
     const result = await db.run(
-      `INSERT INTO clients (name, phone, plan, due_date, notes)
-       VALUES (?, ?, ?, ?, ?) RETURNING id`,
-      [name.trim(), phoneCleaned, plan?.trim() || null, due_date || null, notes?.trim() || null]
+      `INSERT INTO clients (name, phone, plan, due_date, notes, is_trial, trial_started_at)
+       VALUES (?, ?, ?, ?, ?, ?, ${startTrial ? 'now()' : 'NULL'}) RETURNING id`,
+      [name.trim(), phoneCleaned, plan?.trim() || null, due_date || null, notes?.trim() || null, startTrial ? 1 : 0]
     );
     const created = await db.get('SELECT * FROM clients WHERE id = ?', [result.rows[0].id]);
     res.status(201).json(created);
@@ -142,6 +143,24 @@ router.post('/', asyncHandler(async (req, res) => {
     }
     throw err;
   }
+}));
+
+/** POST /api/clients/:id/renew — registra renovação, recalcula vencimento a partir de hoje */
+router.post('/:id/renew', asyncHandler(async (req, res) => {
+  const existing = await db.get('SELECT id FROM clients WHERE id = ?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Cliente não encontrado' });
+
+  const cycleDays = parseInt((await db.get("SELECT value FROM config WHERE key = 'renewal_cycle_days'"))?.value || '30');
+  const next = new Date();
+  next.setDate(next.getDate() + cycleDays);
+  const newDueDate = next.toISOString().split('T')[0];
+
+  await db.run(
+    `UPDATE clients SET due_date = ?, is_trial = 0, is_active = 1, updated_at = now() WHERE id = ?`,
+    [newDueDate, req.params.id]
+  );
+
+  res.json(await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]));
 }));
 
 /** PATCH /api/clients/:id — atualiza cliente */

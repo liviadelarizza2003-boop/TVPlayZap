@@ -33,6 +33,7 @@ const { requireAuth } = require('./routes/auth');
 // Bot e scheduler
 const bot             = require('../bot/index');
 const { startScheduler } = require('../scheduler/renewalReminder');
+const { startScheduler: startTrialScheduler } = require('../scheduler/trialFollowup');
 
 const app    = express();
 const server = http.createServer(app);
@@ -95,8 +96,9 @@ db.initSchema()
       // Inicia bot WhatsApp (não bloqueante)
       bot.connect().catch(err => console.error('[server] Erro ao iniciar bot:', err));
 
-      // Inicia cron de lembretes
+      // Inicia crons de lembretes
       startScheduler();
+      startTrialScheduler();
     });
   })
   .catch(err => {
