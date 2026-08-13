@@ -1,11 +1,11 @@
 {
-  "name": "Livia Bot",
-  "short_name": "Livia Bot",
+  "name": "Eva Lite",
+  "short_name": "Eva Lite",
   "description": "Painel de gestão do bot WhatsApp da Livia",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0f14",
-  "theme_color": "#a855f7",
+  "background_color": "#F8FAF8",
+  "theme_color": "#10B981",
   "orientation": "portrait-primary",
   "icons": [
     {

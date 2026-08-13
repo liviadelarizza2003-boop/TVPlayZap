@@ -44,6 +44,37 @@ function renderTemplate(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, k) => vars[k] || '');
 }
 
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Palavras isoladas que já indicam a pergunta ("você é um robô?", "isso é bot?")
+const IDENTITY_WORDS = ['robo', 'robozinho', 'bot', 'chatbot', 'automatico', 'automatizado', 'maquina'];
+
+// Frases (checadas como substring com espaços nas pontas, pra evitar falso positivo
+// com "ia" isolado — que em português também é o pretérito de "ir": "eu ia pagar...")
+const IDENTITY_PHRASES = [
+  ' inteligencia artificial ', ' e ia ', ' e uma ia ', ' voce e ia ', ' vc e ia ',
+  ' voce e uma ia ', ' vc e uma ia ', ' sao ia ', ' sao uma ia ',
+  ' pessoa real ', ' humano de verdade ', ' gente de verdade ', ' atendente de verdade ',
+  ' falando com humano ', ' falando com uma pessoa ', ' e humano ', ' voce e humano ', ' vc e humano ',
+];
+
+/** Detecta se a mensagem está perguntando se está falando com uma IA/robô/humano */
+function looksLikeIdentityQuestion(text) {
+  const tokens = normalize(text).split(' ').filter(Boolean);
+  if (tokens.some(t => IDENTITY_WORDS.includes(t))) return true;
+
+  const padded = ` ${tokens.join(' ')} `;
+  return IDENTITY_PHRASES.some(phrase => padded.includes(phrase));
+}
+
 /**
  * Processa uma mensagem recebida.
  * @param {object} msg — objeto de mensagem do Baileys
@@ -64,6 +95,19 @@ async function handleMessage(msg, sendMessage, sock) {
     `INSERT INTO messages_log (phone, direction, body) VALUES (?, 'inbound', ?)`,
     [phone, text]
   );
+
+  // ── "Você é uma IA?" ──────────────────────────────────────────────────────
+  if (looksLikeIdentityQuestion(text)) {
+    const disclosure = (await getConfigValue('ai_disclosure_message')) ||
+      'Sou a Eva, assistente virtual da TV Play! 😊';
+
+    await sendMessage(jid, disclosure);
+    await db.run(
+      `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, 'ai_disclosure')`,
+      [phone, disclosure]
+    );
+    return;
+  }
 
   // ── Fora do horário ────────────────────────────────────────────────────────
   if (!(await isWorkingHours())) {

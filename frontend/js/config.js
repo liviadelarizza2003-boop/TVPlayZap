@@ -142,6 +142,11 @@ const SettingsView = {
         <textarea id="cfg-reminder" class="form-input" rows="3"
           placeholder="Olá, {name}! Seu plano {plan} vence dia {due_date}...">${_esc(c.reminder_message || '')}</textarea>
 
+        <p class="card-label" style="margin-top:20px">Mensagem quando perguntam se é uma IA/robô</p>
+        <p class="form-hint">Enviada automaticamente quando o cliente pergunta se está falando com um robô, IA ou humano.</p>
+        <textarea id="cfg-ai-disclosure" class="form-input" rows="3"
+          placeholder="Sou a Eva, assistente virtual da TV Play! 😊">${_esc(c.ai_disclosure_message || '')}</textarea>
+
         <button id="cfg-save-messages" class="btn btn-primary" style="margin-top:20px;width:100%">
           💾 Salvar mensagens
         </button>
@@ -154,9 +159,10 @@ const SettingsView = {
       btn.textContent = 'Salvando...';
       try {
         await api.patch('/api/config', {
-          fallback_message:  document.getElementById('cfg-fallback').value.trim(),
-          off_hours_message: document.getElementById('cfg-offhours').value.trim(),
-          reminder_message:  document.getElementById('cfg-reminder').value.trim(),
+          fallback_message:      document.getElementById('cfg-fallback').value.trim(),
+          off_hours_message:     document.getElementById('cfg-offhours').value.trim(),
+          reminder_message:      document.getElementById('cfg-reminder').value.trim(),
+          ai_disclosure_message: document.getElementById('cfg-ai-disclosure').value.trim(),
         });
         this._cfg = await api.get('/api/config') || this._cfg;
         showToast('Mensagens salvas!');

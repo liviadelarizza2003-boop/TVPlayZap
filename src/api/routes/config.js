@@ -10,7 +10,7 @@ router.use(requireAuth);
 
 const EDITABLE_KEYS = [
   'business_name', 'owner_phone', 'working_hours_start', 'working_hours_end',
-  'fallback_message', 'off_hours_message', 'reminder_message',
+  'fallback_message', 'off_hours_message', 'reminder_message', 'ai_disclosure_message',
 ];
 
 /** GET /api/config */

@@ -1,5 +1,5 @@
 {
-  "name": "livia-bot",
+  "name": "eva-lite",
   "version": "1.0.0",
   "description": "Eva Lite — Bot WhatsApp + Painel PWA para micro empresas",
   "main": "src/api/server.js",

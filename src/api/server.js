@@ -1,6 +1,6 @@
 'use strict';
 /**
- * api/server.js — Servidor principal do Eva Lite (Livia Bot)
+ * api/server.js — Servidor principal do Eva Lite
  *
  * Inicializa na ordem:
  *  1. Express + middlewares
@@ -90,7 +90,7 @@ app.use((err, _req, res, _next) => {
 db.initSchema()
   .then(() => {
     server.listen(PORT, async () => {
-      console.log(`\n🌸 Livia Bot rodando em http://localhost:${PORT}\n`);
+      console.log(`\n🌸 Eva Lite rodando em http://localhost:${PORT}\n`);
 
       // Inicia bot WhatsApp (não bloqueante)
       bot.connect().catch(err => console.error('[server] Erro ao iniciar bot:', err));

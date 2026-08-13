@@ -1,7 +1,7 @@
-// Service Worker — Eva Lite (Livia Bot)
+// Service Worker — Eva Lite
 // Cache shell do PWA para funcionamento offline básico
 
-const CACHE_NAME   = 'livia-bot-v1';
+const CACHE_NAME   = 'eva-lite-v1';
 const SHELL_ASSETS = ['/', '/css/style.css', '/js/app.js', '/js/dashboard.js',
   '/js/clients.js', '/js/training.js', '/js/qrcode.js', '/js/config.js', '/manifest.json'];
 

@@ -1,5 +1,5 @@
 -- ============================================================
--- LIVIA BOT — Schema do banco PostgreSQL (Supabase)
+-- EVA LITE — Schema do banco PostgreSQL (Supabase)
 -- ============================================================
 
 -- Configurações do sistema (chave/valor)
@@ -108,5 +108,6 @@ INSERT INTO config (key, value) VALUES
   ('working_hours_end',   '18'),
   ('fallback_message',    'Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!'),
   ('off_hours_message',   'Olá! Nosso horário de atendimento é das {start}h às {end}h. Retornaremos em breve! 😊'),
-  ('reminder_message',    'Olá, {name}! 👋 Passando pra lembrar que seu plano *{plan}* vence dia *{due_date}*. Quer renovar? É só me avisar! 😊')
+  ('reminder_message',    'Olá, {name}! 👋 Passando pra lembrar que seu plano *{plan}* vence dia *{due_date}*. Quer renovar? É só me avisar! 😊'),
+  ('ai_disclosure_message', 'Sou a Eva, assistente virtual da TV Play! 😊 Posso te ajudar por aqui, e se precisar de algo mais específico chamo a equipe pra você.')
 ON CONFLICT (key) DO NOTHING;

@@ -1,4 +1,4 @@
-# 🌸 Livia Bot (Eva Lite)
+# 🌸 Eva Lite
 
 Bot de WhatsApp + painel PWA para micro empresas. Responde clientes automaticamente
 por FAQ, avisa vencimentos de plano e aprende o FAQ inicial lendo o histórico de
