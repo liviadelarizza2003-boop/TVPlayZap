@@ -68,7 +68,7 @@ const DashboardView = {
     }
 
     list.innerHTML = clients.map(c => `
-      <div class="list-item" onclick="App.navigate('clients')">
+      <div class="list-item" onclick="DashboardView.openClient(${c.id})">
         <div class="list-item-avatar">${initials(c.name)}</div>
         <div class="list-item-info">
           <div class="list-item-name">${c.name}</div>
@@ -76,5 +76,12 @@ const DashboardView = {
         </div>
         ${dueBadge(c.due_date)}
       </div>`).join('');
+  },
+
+  /** Vai pra tela de Clientes e já abre o formulário do cliente clicado */
+  async openClient(id) {
+    App.navigate('clients');
+    await ClientsView.loadClients();
+    ClientsView.openForm(id);
   },
 };
