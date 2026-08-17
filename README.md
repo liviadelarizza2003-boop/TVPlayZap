@@ -137,7 +137,7 @@ Depois do deploy, acesse a URL do serviço e faça login normalmente — cliente
 
 ## Troubleshooting
 
-- **Editei um arquivo em `frontend/js/` e o navegador continua com o código antigo** — o service worker (`sw.js`) faz cache do shell do PWA. Em desenvolvimento, use aba anônima ou dê "Unregister" no service worker (DevTools → Application → Service Workers) e recarregue.
+- **Editei um arquivo em `frontend/js/` e o navegador continua com o código antigo** — o service worker (`sw.js`) usa estratégia "rede primeiro" desde 2026-08-17, então normalmente um reload simples já resolve (rede disponível → busca a versão nova). Se mesmo assim persistir (ex: sem internet no momento, ou uma versão bem antiga do `sw.js` ainda instalada), em desenvolvimento use aba anônima ou dê "Unregister" no service worker (DevTools → Application → Service Workers) e recarregue; no celular, feche o app completamente (não só minimizar) e abra de novo.
 - **Login não funciona / fica piscando entre painel e tela de login** — verifique se `JWT_SECRET` está definido no `.env` e se os cookies não estão sendo bloqueados (o login usa cookie `httpOnly`, `SameSite=Lax`).
 - **"Analisar histórico" não gera nenhuma sugestão** — confira se `GROQ_API_KEY` está preenchida no `.env` e se já existem mensagens recebidas registradas em `messages_log` (o bot precisa ter ficado conectado recebendo mensagens antes).
 - **Esqueci a senha do painel** — na tela de login, clique em "Esqueci minha senha" e informe a `RECOVERY_KEY` configurada no `.env` (ou nas variáveis de ambiente do Render) junto com a nova senha.

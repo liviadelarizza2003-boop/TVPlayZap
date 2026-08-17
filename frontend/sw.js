@@ -1,7 +1,7 @@
 // Service Worker — Eva Lite
 // Cache shell do PWA para funcionamento offline básico
 
-const CACHE_NAME   = 'eva-lite-v1';
+const CACHE_NAME   = 'eva-lite-v2';
 const SHELL_ASSETS = ['/', '/css/style.css', '/js/app.js', '/js/dashboard.js',
   '/js/clients.js', '/js/training.js', '/js/qrcode.js', '/js/config.js', '/manifest.json'];
 
@@ -26,7 +26,16 @@ self.addEventListener('fetch', (e) => {
   if (e.request.url.includes('/api/') || e.request.url.includes('/ws/')) {
     return;
   }
+  // Rede primeiro (pega sempre a versão mais nova quando online) — cache só
+  // como reserva pra funcionar offline. Sem isso, uma atualização de código
+  // podia nunca chegar a quem já tinha o PWA aberto/instalado antes.
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(res => {
+        const resClone = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
