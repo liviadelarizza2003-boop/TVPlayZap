@@ -1,11 +1,22 @@
 'use strict';
 const express      = require('express');
 const db           = require('../../db/db');
+const bot          = require('../../bot/index');
 const { requireAuth } = require('./auth');
 const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
 router.use(requireAuth);
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function renderTemplate(template, vars) {
+  return template.replace(/\{(\w+)\}/g, (_, k) => vars[k] || '');
+}
 
 /** GET /api/clients — lista todos os clientes */
 router.get('/', asyncHandler(async (req, res) => {
@@ -143,6 +154,40 @@ router.post('/', asyncHandler(async (req, res) => {
     }
     throw err;
   }
+}));
+
+/** POST /api/clients/:id/send-reminder — envia a mensagem de lembrete agora, manualmente */
+router.post('/:id/send-reminder', asyncHandler(async (req, res) => {
+  const client = await db.get('SELECT * FROM clients WHERE id = ?', [req.params.id]);
+  if (!client) return res.status(404).json({ error: 'Cliente não encontrado' });
+
+  const template = (await db.get("SELECT value FROM config WHERE key = 'reminder_message'"))?.value ||
+    'Olá, {name}! 👋 Seu plano *{plan}* vence dia *{due_date}*. Quer renovar? 😊';
+
+  const msg = renderTemplate(template, {
+    name:     client.name,
+    plan:     client.plan || 'seu plano',
+    due_date: formatDate(client.due_date),
+  });
+
+  const whatsappId = client.phone.includes('@') ? client.phone : `${client.phone}@s.whatsapp.net`;
+
+  await bot.sendMessage(whatsappId, msg);
+
+  await db.run(
+    `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, 'manual_reminder')`,
+    [client.phone, msg]
+  );
+
+  // Marca como "já lembrado" pra esse vencimento, evitando lembrete duplicado do cron automático
+  if (client.due_date) {
+    await db.run(
+      `INSERT INTO renewal_notifications (client_id, due_date, status) VALUES (?, ?, 'sent')`,
+      [client.id, client.due_date]
+    );
+  }
+
+  res.json({ ok: true, message: msg });
 }));
 
 /** POST /api/clients/:id/renew — registra renovação, recalcula vencimento a partir de hoje */

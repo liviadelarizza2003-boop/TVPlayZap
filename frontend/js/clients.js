@@ -126,9 +126,16 @@ const ClientsView = {
           </button>
         </div>` : ''}
         ${isEdit && !client?.is_trial ? `
-        <button type="button" class="btn btn-ghost btn-full" style="margin-bottom:18px" onclick="ClientsView.renewClient(${id})">
+        <button type="button" class="btn btn-ghost btn-full" style="margin-bottom:12px" onclick="ClientsView.renewClient(${id})">
           🔄 Renovar agora (define vencimento a partir de hoje)
         </button>` : ''}
+        ${isEdit ? `
+        <button type="button" class="btn btn-ghost btn-full" style="margin-bottom:18px" onclick="ClientsView.sendReminderNow(${id})">
+          📨 Enviar lembrete agora
+        </button>
+        <p class="form-hint" style="margin-top:-10px;margin-bottom:18px">
+          Útil se esqueceu de cadastrar o cliente a tempo do lembrete automático — manda a mensagem de lembrete pra ele agora mesmo.
+        </p>` : ''}
         <div class="flex gap-8 mt-16">
           ${isEdit ? `<button type="button" class="btn btn-danger" onclick="ClientsView.deleteClient(${id})">🗑 Remover</button>` : ''}
           <button type="submit" class="btn btn-primary" style="flex:1">${isEdit ? 'Salvar alterações' : 'Cadastrar cliente'}</button>
@@ -154,6 +161,15 @@ const ClientsView = {
         showToast(err.message, 'error');
       }
     };
+  },
+
+  async sendReminderNow(id) {
+    try {
+      await api.post(`/api/clients/${id}/send-reminder`, {});
+      showToast('Lembrete enviado! 📨');
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
   },
 
   async renewClient(id) {
