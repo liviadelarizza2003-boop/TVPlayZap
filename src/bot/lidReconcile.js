@@ -9,6 +9,7 @@
  * então rodar de novo a cada conexão tem chance de resolver mais casos.
  */
 
+const { jidNormalizedUser } = require('@whiskeysockets/baileys');
 const db = require('../db/db');
 
 async function reconcileLidPhones(sock) {
@@ -29,7 +30,9 @@ async function reconcileLidPhones(sock) {
       const pn = await lidMapping.getPNForLID(lidJid);
       if (!pn) continue;
 
-      const realPhone = pn.replace('@s.whatsapp.net', '');
+      // jidNormalizedUser remove o sufixo de dispositivo (ex: ":0") — sem isso
+      // a mensagem parece "enviada" mas vai pro aparelho errado e não chega
+      const realPhone = jidNormalizedUser(pn).replace('@s.whatsapp.net', '');
       await db.run('UPDATE messages_log SET phone = ? WHERE phone = ?', [realPhone, lidJid]);
       await db.run('UPDATE client_candidates SET phone = ? WHERE phone = ?', [realPhone, lidJid]);
       fixed++;
