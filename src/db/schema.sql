@@ -86,6 +86,16 @@ CREATE TABLE IF NOT EXISTS whatsapp_keys (
   PRIMARY KEY (type, key_id)
 );
 
+-- Pausa automática das respostas do bot por telefone — criada/renovada sempre que
+-- alguém (a Lívia, ou outro atendente) responde manualmente pelo próprio WhatsApp
+-- (celular/WhatsApp Web, fora do bot). Evita o bot continuar respondendo por cima
+-- de um atendimento humano já em andamento com aquele cliente.
+CREATE TABLE IF NOT EXISTS human_pauses (
+  phone        TEXT PRIMARY KEY,
+  paused_until TIMESTAMPTZ NOT NULL,
+  updated_at   TIMESTAMPTZ DEFAULT now()
+);
+
 -- Log de mensagens recebidas/enviadas (para histórico e debug)
 CREATE TABLE IF NOT EXISTS messages_log (
   id          SERIAL PRIMARY KEY,
@@ -120,5 +130,8 @@ INSERT INTO config (key, value) VALUES
   ('reminder_message',    'Olá, {name}! 👋 Passando pra lembrar que seu plano *{plan}* vence dia *{due_date}*. Quer renovar? É só me avisar! 😊'),
   ('ai_disclosure_message', 'Sou a Eva, assistente virtual da TV Play! 😊 Posso te ajudar por aqui, e se precisar de algo mais específico chamo a equipe pra você.'),
   ('renewal_cycle_days',  '30'),
-  ('trial_message',       'E aí {name}! Tudo bem? Seu período de teste de 24h terminou — gostou? Quer assinar o plano? 😊')
+  ('trial_message',       'E aí {name}! Tudo bem? Seu período de teste de 24h terminou — gostou? Quer assinar o plano? 😊'),
+  ('human_pause_hours',      '6'),
+  ('debounce_seconds',       '15'),
+  ('auto_reply_dedupe_hours','3')
 ON CONFLICT (key) DO NOTHING;

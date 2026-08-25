@@ -13,6 +13,7 @@ const EDITABLE_KEYS = [
   'business_name', 'owner_phone', 'working_hours_start', 'working_hours_end',
   'fallback_message', 'off_hours_message', 'reminder_message', 'ai_disclosure_message',
   'renewal_cycle_days', 'trial_message',
+  'human_pause_hours', 'debounce_seconds', 'auto_reply_dedupe_hours',
 ];
 
 /** GET /api/config */

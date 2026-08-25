@@ -93,6 +93,16 @@ const SettingsView = {
           </div>
         </div>
 
+        <p class="card-label" style="margin-top:16px">Agrupar mensagens seguidas do cliente (segundos)</p>
+        <p class="form-hint">Antes de responder, o bot espera esse tempo pra juntar mensagens que o cliente mandar em sequência — evita responder cada balãozinho separado.</p>
+        <input id="cfg-debounce-seconds" class="form-input" type="number" min="0" max="60"
+               value="${_esc(c.debounce_seconds || '15')}">
+
+        <p class="card-label" style="margin-top:16px">Pausa automática após atendimento manual (horas)</p>
+        <p class="form-hint">Quando você mesma responde um cliente direto pelo WhatsApp do celular, o bot para de responder automaticamente esse cliente por esse tempo.</p>
+        <input id="cfg-human-pause-hours" class="form-input" type="number" min="0" max="72"
+               value="${_esc(c.human_pause_hours || '6')}">
+
         <button id="cfg-save-business" class="btn btn-primary" style="margin-top:20px;width:100%">
           💾 Salvar configurações
         </button>
@@ -110,6 +120,8 @@ const SettingsView = {
           working_hours_start: document.getElementById('cfg-hours-start').value,
           working_hours_end:   document.getElementById('cfg-hours-end').value,
           renewal_cycle_days:  document.getElementById('cfg-renewal-cycle').value,
+          debounce_seconds:    document.getElementById('cfg-debounce-seconds').value,
+          human_pause_hours:   document.getElementById('cfg-human-pause-hours').value,
         });
         // Atualiza nome no header
         const name = document.getElementById('cfg-business-name').value.trim();

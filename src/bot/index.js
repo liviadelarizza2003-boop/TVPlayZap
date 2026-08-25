@@ -18,7 +18,7 @@ const {
   isJidBroadcast,
 } = require('@whiskeysockets/baileys');
 
-const { handleMessage } = require('./messageHandler');
+const { handleMessage, handleOwnMessage } = require('./messageHandler');
 const { ingestHistory } = require('./historyIngest');
 const { reconcileLidPhones } = require('./lidReconcile');
 const { useDbAuthState, clearDbAuthState } = require('./dbAuthState');
@@ -32,6 +32,13 @@ let sock         = null;
 let qrData       = null;      // string do QR Code atual
 let connected    = false;
 let qrListeners  = new Set(); // WebSockets aguardando QR
+
+// Ids das mensagens que o próprio bot acabou de enviar (via sendMessage abaixo) —
+// usado pra distinguir, quando o evento `fromMe` chega de volta, o eco do nosso
+// próprio envio de uma resposta manual de verdade digitada no celular/WhatsApp
+// Web (ver handleOwnMessage em messageHandler.js). Limpo automaticamente depois
+// de 1 minuto — tempo de sobra pro eco chegar, sem acumular pra sempre.
+const botSentMessageIds = new Set();
 
 /** Retorna o estado de conexão para a API */
 function getStatus() {
@@ -62,7 +69,12 @@ function broadcastToListeners(payload) {
  */
 async function sendMessage(jid, text) {
   if (!sock || !connected) throw new Error('Bot não conectado ao WhatsApp');
-  await sock.sendMessage(jid, { text });
+  const result = await sock.sendMessage(jid, { text });
+  if (result?.key?.id) {
+    botSentMessageIds.add(result.key.id);
+    setTimeout(() => botSentMessageIds.delete(result.key.id), 60_000);
+  }
+  return result;
 }
 
 // Exponha o sendMessage para os schedulers
@@ -181,13 +193,19 @@ async function connect() {
     if (type !== 'notify') return;
 
     for (const msg of messages) {
-      // Ignora mensagens do próprio bot, broadcasts e grupos
-      if (msg.key.fromMe)            continue;
+      // Ignora broadcasts e grupos, nos dois sentidos
       if (isJidBroadcast(msg.key.remoteJid)) continue;
       if (msg.key.remoteJid?.endsWith('@g.us')) continue; // grupos
 
       try {
-        await handleMessage(msg, sendMessage, sock);
+        if (msg.key.fromMe) {
+          // Pode ser o eco do que o próprio bot mandou (ignora) ou uma resposta
+          // manual de verdade digitada no celular/WhatsApp Web (pausa o bot pra
+          // esse cliente) — ver handleOwnMessage em messageHandler.js.
+          await handleOwnMessage(msg, botSentMessageIds, sock);
+        } else {
+          await handleMessage(msg, sendMessage, sock);
+        }
       } catch (err) {
         console.error('[bot] Erro ao processar mensagem:', err);
       }
