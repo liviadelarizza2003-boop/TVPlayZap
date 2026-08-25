@@ -22,8 +22,8 @@ repo), seção "⚠️ Produto-irmão".
 
 ## Último commit da Eva revisado
 
-`0834b657795e1a908b039388f93a8f3d099ca3ef` (branch `dev`, 2026-08-25 14:46 —
-"Corrige conversa vazia flutuando pro topo da lista (NULLS LAST)")
+`aeb07c209ef8d593325eb8dd4e0979db399544f3` (branch `dev`, 2026-08-25 —
+"Documenta produto-irmão Eva Lite — pergunta antes de portar correção estrutural")
 
 ## Histórico de sincronizações
 
@@ -60,3 +60,16 @@ de correções estruturais equivalentes.
 
 **Se revisar essa sessão depois:** o commit-base acima já reflete o estado
 da Eva analisado nesta sessão — próxima sincronização parte dele.
+
+### 2026-08-25 — execução de validação (rodada manualmente, substituindo o "Run now" da tarefa agendada que ainda não existia como skill carregável na sessão)
+
+**Motivo:** testar o mecanismo de sincronização recém-criado (`/sync-eva-lite`
++ rotina semanal) de ponta a ponta antes de confiar nele rodando sozinho.
+
+**Encontrado:** 1 commit novo na Eva desde a baseline (`aeb07c2`) — mas é a
+própria nota de processo "pergunte antes de portar correção estrutural"
+adicionada no `CLAUDE.md` da Eva nesta mesma sessão, não uma correção de
+código. **Nada pra portar.** Resultado esperado e correto — confirma que o
+mecanismo de diff funciona (achou exatamente o commit certo, nem mais nem
+menos) e que ele reconhece corretamente quando não há nada estrutural pra
+avaliar.
