@@ -73,3 +73,23 @@ código. **Nada pra portar.** Resultado esperado e correto — confirma que o
 mecanismo de diff funciona (achou exatamente o commit certo, nem mais nem
 menos) e que ele reconhece corretamente quando não há nada estrutural pra
 avaliar.
+
+### 2026-08-25 — validação pedida pela usuária (não é um /sync-eva-lite completo, script pontual da Eva)
+
+**Motivo:** usuária pediu pra checar se `scripts/merge_7_reconnect_dupes.js`
+(script avulso, ainda não commitado na Eva, que mescla 7 contatos duplicados
+específicos) representa um desafio que a Lite também tem — o objetivo do
+script é garantir que uma nova mensagem do mesmo cliente continue na mesma
+conversa/histórico em vez de fragmentar.
+
+**Avaliado:** o script em si não se aplica — a Lite não tem tabela de
+`contacts` nem `conversations` pra ter "duplicata" nesse sentido. **Mas o
+desafio de fundo existia aqui de outra forma**: `reconcileLidPhones()`
+nunca funcionou desde que foi criado (12/08/2026), por um descompasso entre
+o que `resolvePhone()` grava e o que o corretor procura — telefones
+mal-resolvidos (`@lid`) ficavam fragmentados pra sempre, com o mesmo efeito
+prático (histórico dividido) que o script da Eva existe pra evitar lá.
+**Corrigido** em `src/bot/jidUtils.js` + `src/bot/lidReconcile.js` — detalhe
+completo em `CLAUDE.md`, seção "Correção de telefone `@lid` nunca resolvido
+de fato". Não é um port literal do script da Eva, é uma correção
+independente motivada pela mesma pergunta.

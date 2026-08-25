@@ -41,8 +41,16 @@ async function resolvePhone(jid, key, sock) {
       if (pn) return jidNormalizedUser(pn).replace('@s.whatsapp.net', '');
     } catch { /* segue pro fallback abaixo */ }
 
-    // Não foi possível resolver ainda — usa o LID sem sufixo (melhor que travar)
-    return jid.replace('@lid', '');
+    // Não foi possível resolver ainda — grava o "@lid" bruto (melhor que travar).
+    // Importante manter o sufixo "@lid" aqui (não remover): é o marcador que
+    // reconcileLidPhones() (lidReconcile.js) usa pra achar essas linhas depois,
+    // quando o mapeamento do Baileys já tiver enchido. Removê-lo faz esse
+    // telefone nunca mais ser corrigido — o histórico dessa pessoa fica
+    // permanentemente dividido entre esse valor e o telefone real resolvido
+    // mais tarde (mesmo desafio que a Eva "grande" resolve com merge de
+    // contatos duplicados, só que aqui não existe tabela de contatos pra
+    // mesclar — é o próprio valor de `phone` que fica fragmentado).
+    return jid;
   }
 
   return jid.replace(/@.*/, '');

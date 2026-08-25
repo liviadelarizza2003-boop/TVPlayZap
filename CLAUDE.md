@@ -129,6 +129,55 @@ WhatsApp reais): debounce agrupou 3 mensagens numa resposta só, dedupe
 bloqueou repetição, pausa pós-manual bloqueou resposta automática, e o eco
 do próprio envio do bot não foi confundido com resposta manual.
 
+## Correção de telefone `@lid` nunca resolvido de fato — corrigido (2026-08-25)
+
+Motivado pela usuária pedindo pra validar se a Eva Lite tem o mesmo desafio
+que um script pontual da Eva grande resolve lá (mesclar contatos duplicados
+pra garantir que uma nova mensagem continue na mesma conversa/histórico em
+vez de "começar do zero"). A Eva Lite não tem tabela de contatos nem de
+conversas, então esse script não se aplica literalmente — mas investigando,
+achei a versão equivalente do problema aqui: **`reconcileLidPhones()`
+(`src/bot/lidReconcile.js`, existe desde 12/08/2026) nunca corrigiu nada,
+desde o dia em que foi criado.**
+
+Causa: a função procura linhas com `phone LIKE '%@lid'`, mas
+`resolvePhone()` (`src/bot/jidUtils.js`) já removia esse sufixo antes de
+gravar (`jid.replace('@lid', '')`) — os dois arquivos foram commitados juntos
+(`96a8b5c`), só que com um descompasso entre o que um grava e o que o outro
+procura. Na prática: todo cliente cujo telefone não deu pra resolver no
+primeiro contato (WhatsApp endereçando por `@lid` em vez do número real)
+ficava com esse identificador bruto gravado como "telefone" **pra sempre**,
+mesmo depois do mapeamento do Baileys ficar disponível em conexões
+seguintes — o corretor existia, rodava a cada conexão, mas nunca encontrava
+essas linhas. Duas consequências reais: (1) `clientExtractor.js` agrupa
+`messages_log` por telefone pra sugerir clientes via IA — o histórico dessa
+pessoa ficava fragmentado entre o valor de `@lid` e o telefone real (se
+resolvido numa mensagem posterior), aparecendo como duas pessoas diferentes
+em vez de uma só; (2) a pausa pós-atendimento manual e o dedupe adicionados
+nesta mesma sessão (seção acima) são chaveados por telefone — se a mesma
+pessoa oscilar entre os dois valores, a pausa/dedupe simplesmente não valem
+pra metade das mensagens dela.
+
+**Correção:** `resolvePhone()` agora mantém o sufixo `@lid` no fallback (não
+remove mais) — é o marcador que `reconcileLidPhones()` sempre esperou
+encontrar. `reconcileLidPhones()` estendido pra também corrigir
+`human_pauses` (tabela nova desta sessão, mesma exposição), com tratamento
+pro caso de já existir uma pausa pro telefone real (chave primária) — nesse
+caso descarta a pausa órfã do `@lid` em vez de tentar duplicar a chave.
+`messages_log`/`client_candidates` continuam cobertos como antes.
+
+Testado isolado (mock de `db`, sem tocar Postgres real): telefone não
+resolvido mantém o sufixo; telefone resolvido depois vira o número real;
+`messages_log`/`client_candidates`/`human_pauses` são corrigidos juntos; e o
+caso de colisão de chave primária em `human_pauses` é tratado sem erro.
+
+**Não verificado ainda**: quantos telefones de produção já estão gravados
+como `@lid` puro (sem o sufixo, pelo bug antigo) — esses **não** serão
+pegos pelo corretor novo, porque já perderam o marcador antes desta correção
+existir. Se quiser, dá pra rodar uma consulta pontual em produção pra achar
+esses casos e corrigir manualmente (mesmo padrão de script avulso que a Eva
+grande usa) — combinar antes de rodar qualquer coisa contra o banco real.
+
 ## Status conhecido (2026-08-25)
 
 Em investigação: lembretes (manuais e automáticos) aparecem como "enviados"
