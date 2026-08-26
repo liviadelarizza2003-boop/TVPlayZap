@@ -14,6 +14,7 @@ const EDITABLE_KEYS = [
   'fallback_message', 'off_hours_message', 'reminder_message', 'ai_disclosure_message',
   'renewal_cycle_days', 'trial_message',
   'human_pause_hours', 'debounce_seconds', 'auto_reply_dedupe_hours',
+  'rate_limit_max_messages', 'rate_limit_window_minutes', 'rate_limit_pause_minutes',
 ];
 
 /** GET /api/config */

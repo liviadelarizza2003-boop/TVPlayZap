@@ -27,6 +27,9 @@ const DEBOUNCE_DEFAULT_SECONDS   = 15;
 const HUMAN_PAUSE_DEFAULT_HOURS  = 6;
 const DEDUPE_DEFAULT_HOURS       = 3;
 const PRESENCE_REFRESH_MS        = 5000; // WhatsApp "digitando..." expira sozinho depois de alguns segundos
+const RATE_LIMIT_DEFAULT_MAX_MESSAGES = 15;
+const RATE_LIMIT_DEFAULT_WINDOW_MIN   = 5;
+const RATE_LIMIT_DEFAULT_PAUSE_MIN    = 30;
 
 // phone -> { texts: string[], jid: string, timer: Timeout, presenceTimer: Interval }
 const pendingBuffers = new Map();
@@ -118,6 +121,46 @@ async function setHumanPause(phone) {
      VALUES (?, now() + (interval '1 hour' * ?), now())
      ON CONFLICT (phone) DO UPDATE SET paused_until = EXCLUDED.paused_until, updated_at = now()`,
     [phone, hours]
+  );
+}
+
+// Rajada sustentada de mensagens do mesmo telefone (ver best practice
+// portada da Eva "grande", C:\Sistemas\eva-test — lá protege sobretudo o
+// custo de IA por mensagem; aqui não há IA livre, mas o mesmo risco de
+// cliente nervoso/testando o bot/script mandando dezenas de mensagens
+// seguidas continua existindo). O debounce acima já agrupa rajadas CURTAS
+// (mensagens a poucos segundos uma da outra) num turno só — isto aqui cobre
+// o caso de mensagens espaçadas mais que `debounce_seconds`, que nunca
+// chegam a ser agrupadas.
+async function isRateLimited(phone) {
+  const maxMessages = parseInt((await getConfigValue('rate_limit_max_messages')) || String(RATE_LIMIT_DEFAULT_MAX_MESSAGES));
+  const windowMinutes = parseFloat((await getConfigValue('rate_limit_window_minutes')) || String(RATE_LIMIT_DEFAULT_WINDOW_MIN));
+  const row = await db.get(
+    `SELECT COUNT(*) as cnt FROM messages_log
+     WHERE phone = ? AND direction = 'inbound'
+       AND sent_at > now() - (interval '1 minute' * ?)`,
+    [phone, windowMinutes]
+  );
+  return parseInt(row?.cnt || 0, 10) > maxMessages;
+}
+
+// Pausa específica de rate limit — mais curta que a pausa de atendimento
+// humano (`human_pause_hours`, tipicamente 6h): é só um "esfria um pouco",
+// não uma sinalização de que alguém já está atendendo ao vivo. Reaproveita a
+// mesma tabela `human_pauses` (mesmo efeito prático: `isHumanPaused` já
+// bloqueia resposta automática enquanto durar) em vez de criar uma tabela
+// nova só pra isso. `GREATEST` garante que nunca ENCURTA uma pausa humana
+// de verdade já ativa (ex.: Lívia já está atendendo manualmente há 2h de
+// uma pausa de 6h — uma rajada nesse meio tempo não deveria reduzir isso).
+async function pauseForRateLimit(phone) {
+  const minutes = parseFloat((await getConfigValue('rate_limit_pause_minutes')) || String(RATE_LIMIT_DEFAULT_PAUSE_MIN));
+  await db.run(
+    `INSERT INTO human_pauses (phone, paused_until, updated_at)
+     VALUES (?, now() + (interval '1 minute' * ?), now())
+     ON CONFLICT (phone) DO UPDATE SET
+       paused_until = GREATEST(human_pauses.paused_until, EXCLUDED.paused_until),
+       updated_at = now()`,
+    [phone, minutes]
   );
 }
 
@@ -246,6 +289,29 @@ async function handleMessage(msg, sendMessage, sock) {
 
   // Alguém já está atendendo esse cliente ao vivo — não compete com isso
   if (await isHumanPaused(phone)) return;
+
+  // Rajada sustentada — mensagem já foi logada acima; pausa o bot pra esse
+  // telefone (ver pauseForRateLimit) em vez de continuar respondendo
+  // automaticamente a cada mensagem nova, e avisa a dona pelo próprio
+  // WhatsApp se ela tiver um número configurado (owner_phone) — não existe
+  // painel/notificação separada aqui como na Eva grande, só o WhatsApp dela
+  // mesma. Só dispara uma vez por rajada: a próxima mensagem já cai no
+  // `isHumanPaused` acima antes de chegar aqui de novo.
+  if (await isRateLimited(phone)) {
+    await pauseForRateLimit(phone);
+    clearBuffer(phone); // cancela qualquer resposta já agendada nesta rajada
+
+    const ownerPhone = await getConfigValue('owner_phone');
+    if (ownerPhone) {
+      const alert = `⚠️ O contato ${phone} mandou muitas mensagens seguidas — o bot pausou as respostas automáticas pra esse número. Dá uma olhada quando puder.`;
+      try {
+        await sendMessage(`${ownerPhone}@s.whatsapp.net`, alert);
+      } catch (err) {
+        console.error('[bot] Erro ao avisar a dona sobre rate limit:', err.message);
+      }
+    }
+    return;
+  }
 
   await bufferMessage(phone, jid, text, sendMessage, sock);
 }

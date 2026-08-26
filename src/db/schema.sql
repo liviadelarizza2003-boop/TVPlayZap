@@ -133,5 +133,8 @@ INSERT INTO config (key, value) VALUES
   ('trial_message',       'E aí {name}! Tudo bem? Seu período de teste de 24h terminou — gostou? Quer assinar o plano? 😊'),
   ('human_pause_hours',      '6'),
   ('debounce_seconds',       '15'),
-  ('auto_reply_dedupe_hours','3')
+  ('auto_reply_dedupe_hours','3'),
+  ('rate_limit_max_messages',  '15'),
+  ('rate_limit_window_minutes','5'),
+  ('rate_limit_pause_minutes', '30')
 ON CONFLICT (key) DO NOTHING;

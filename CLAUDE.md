@@ -129,6 +129,59 @@ WhatsApp reais): debounce agrupou 3 mensagens numa resposta só, dedupe
 bloqueou repetição, pausa pós-manual bloqueou resposta automática, e o eco
 do próprio envio do bot não foi confundido com resposta manual.
 
+## Rate limit por contato + primeira suíte de testes (adicionado 25/08/2026)
+
+Portado de uma sessão de best practices na Eva "grande" (`C:\Sistemas\eva-test`,
+ver `EVA_SYNC_LOG.md` — commits desde a baseline `aeb07c2`). Da lista inteira
+dessa sessão (buffer de mensagens, dedupe por contato, rate limit, rastro de
+decisão, suíte de regressão, confiança real da IA), só duas coisas se
+aplicavam de verdade aqui — as outras já existiam nesta forma mais simples
+(dedupe já é por telefone, não por "conversa" — este bot não tem tabela de
+conversas pra ter esse problema) ou não fazem sentido sem classificador/IA
+livre (rastro de decisão, confiança da IA). Ver seção abaixo do por-que de
+cada descarte.
+
+- **`isRateLimited(phone)`** (`src/bot/messageHandler.js`) conta mensagens
+  inbound desse telefone em `messages_log` dentro de `rate_limit_window_minutes`
+  (config, default 5min); acima de `rate_limit_max_messages` (default 15),
+  `handleMessage()` chama `pauseForRateLimit(phone)` — cria/renova uma pausa
+  em `human_pauses` com duração própria e mais curta (`rate_limit_pause_minutes`,
+  default 30min) que a pausa de atendimento humano (`human_pause_hours`,
+  default 6h), usando `GREATEST` pra nunca ENCURTAR uma pausa humana de
+  verdade já ativa. Cancela qualquer resposta já agendada no buffer
+  (`clearBuffer`) e, se `owner_phone` estiver configurado, manda um aviso
+  direto pro WhatsApp da dona — não existe painel de notificação separado
+  aqui como na Eva grande (`notifyAgents`), só o WhatsApp dela mesma. Só
+  dispara uma vez por rajada: a mensagem seguinte já cai no `isHumanPaused`
+  antes de chegar no rate limit de novo.
+- **Por que o dedupe por contato da Eva grande não se aplicava:** aquele fix
+  existia porque a Eva tem uma tabela `conversations` — "Resolver" numa
+  conversa `waiting_human` sem resposta humana de verdade abria uma linha
+  nova em branco, perdendo o dedupe que só olhava `conversation_id`. Este
+  bot não tem `conversations` nem `Resolver` — `wasRecentlySent()` já
+  sempre foi escopado por `phone` direto em `messages_log`, então o mesmo
+  bug estruturalmente não existe aqui.
+- **Por que rastro de decisão e confiança real da IA não se aplicavam:**
+  ambos existem pra investigar decisões de classificador A/B/C/D e de
+  resposta livre por IA — nenhum dos dois existe aqui (só FAQ fixo +
+  fallback fixo). O pouco que faria sentido guardar (qual FAQ bateu, com
+  que score) já está em `messages_log.faq_id`/`confidence` desde sempre.
+- **`test/regression.js`** — primeira suíte de teste deste repo também
+  (mesma ideia da Eva grande: sem dependência nova, mocka `../db/db` via
+  `Module._resolveFilename`). Cobre `faqSearch.search()` — o algoritmo foi
+  portado quase literal de lá, então sofre a mesma classe de bug (match
+  espalhado dando confidence=1 por engano). 4 casos, verificados quebrando
+  de propósito o desconto de match espalhado (`SCATTERED_MATCH_DISCOUNT`) e
+  confirmando que a suíte acusa a falha antes de reverter. `messageHandler.js`
+  (debounce/pausa/dedupe/rate limit) não coberto ainda — exigiria mockar
+  Baileys/`sendMessage` também. `npm test` roda a suíte.
+- **`rate_limit_max_messages`/`rate_limit_window_minutes`/`rate_limit_pause_minutes`**
+  seedados em `schema.sql` (roda em todo boot via `initSchema()`, idempotente
+  — diferente da Eva grande, não precisa de script de migração pontual
+  separado) e adicionados ao `EDITABLE_KEYS` de `src/api/routes/config.js`
+  (editável via API; sem campo dedicado no formulário de Config ainda, mesmo
+  estado em que `auto_reply_dedupe_hours` já ficou desde 25/08/2026).
+
 ## Correção de telefone `@lid` nunca resolvido de fato — corrigido (2026-08-25)
 
 Motivado pela usuária pedindo pra validar se a Eva Lite tem o mesmo desafio

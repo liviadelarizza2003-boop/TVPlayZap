@@ -22,8 +22,8 @@ repo), seção "⚠️ Produto-irmão".
 
 ## Último commit da Eva revisado
 
-`aeb07c209ef8d593325eb8dd4e0979db399544f3` (branch `dev`, 2026-08-25 —
-"Documenta produto-irmão Eva Lite — pergunta antes de portar correção estrutural")
+`399dac0c3745fee1fb2cee59f6bc8181d2920740` (branch `dev`, 2026-08-25 —
+"Calibra confiança da IA pelo embasamento real, não só finish_reason")
 
 ## Histórico de sincronizações
 
@@ -93,3 +93,52 @@ prático (histórico dividido) que o script da Eva existe pra evitar lá.
 completo em `CLAUDE.md`, seção "Correção de telefone `@lid` nunca resolvido
 de fato". Não é um port literal do script da Eva, é uma correção
 independente motivada pela mesma pergunta.
+
+### 2026-08-25 — sessão de best practices na Eva grande (baseline `aeb07c2` → `399dac0`)
+
+**Motivo:** usuária pediu explicitamente pra portar o que desse de uma sessão
+inteira de best practices de chatbot rodada na Eva grande (buffer de
+mensagens, confiança da IA/topMatches, dedupe por contato, rastro de
+decisão, rate limit, suíte de regressão, confiança real da IA — 7 commits,
+`3f12e62`..`399dac0`). Dois commits extras no intervalo (`0e9655a` deep link
+`?telefone=` no painel, `bc8af72` fix de paginação do painel espelho Quitta)
+não são correções estruturais nem se aplicam aqui (painel próprio distinto;
+Quitta é integração exclusiva do tenant Imóveis Santa Cruz) — revisados e
+descartados sem ação.
+
+**Portado:**
+- **Rate limit por contato** — `isRateLimited()`/`pauseForRateLimit()`
+  (`src/bot/messageHandler.js`), config `rate_limit_max_messages`/
+  `rate_limit_window_minutes`/`rate_limit_pause_minutes`. Adaptado: reaproveita
+  `human_pauses` com uma duração própria mais curta (`GREATEST` pra nunca
+  encurtar uma pausa humana real já ativa) em vez do `waiting_human` de
+  conversa que a Eva usa — e manda o aviso direto pro WhatsApp de
+  `owner_phone` (não existe painel de notificação separado aqui). Detalhe em
+  `CLAUDE.md`, seção "Rate limit por contato + primeira suíte de testes".
+- **Primeira suíte de regressão deste repo** — `test/regression.js`, cobrindo
+  `faqSearch.search()` (mesmo algoritmo/mesma classe de bug da Eva). `npm
+  test` roda. Verificado quebrando de propósito `SCATTERED_MATCH_DISCOUNT` e
+  confirmando que a suíte acusa a falha antes de reverter.
+
+**Avaliado e descartado (não aplicável à Lite hoje):**
+- **Dedupe por contato em vez de por conversa** — o bug de origem (Resolver
+  numa conversa `waiting_human` sem resposta humana abrindo uma linha nova
+  em branco) depende da Lite ter uma tabela `conversations`, que não existe
+  aqui. `wasRecentlySent()` já sempre foi escopado por `phone` direto em
+  `messages_log` — o mesmo problema estruturalmente não existe.
+- **`topMatches()` filtrando match espalhado fraco (`faq_context_min_score`)**
+  — mesmo motivo já registrado na sessão anterior: `topMatches()` existe
+  aqui mas não é chamado em lugar nenhum do código (confirmado por busca no
+  repo) — não alimenta IA nenhuma, então o corte não teria efeito nenhum.
+  Continua sem uso real; possível candidato a remoção futura (dead code),
+  não uma correção pendente.
+- **Rastro de decisão por mensagem** — depende de categoria (A/B/C/D) e de
+  regras de comportamento no prompt da IA, nenhum dos dois existe aqui. O
+  pouco que faria sentido guardar (FAQ que bateu + score) já está em
+  `messages_log.faq_id`/`confidence` desde sempre.
+- **Confiança real da IA (`blendConfidence`)** — não há resposta livre por
+  IA nesta Lite, só FAQ fixo + fallback fixo; não existe `confidence` de IA
+  nenhum pra calibrar.
+
+**Se revisar essa sessão depois:** o commit-base acima já reflete o estado
+da Eva analisado nesta sessão — próxima sincronização parte dele.
