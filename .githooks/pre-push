@@ -1,0 +1,22 @@
+#!/bin/sh
+# Roda a suíte de regressão antes de qualquer push — este projeto não tem CI,
+# então este hook é o único gate automático entre "quebrou um teste" e "foi
+# pro GitHub/Render" (o push pro main aqui já é deploy, ver CLAUDE.md). Ver
+# test/regression.js e test/messageHandlerTurns.js — npm test roda os dois.
+#
+# Habilitado via `git config core.hooksPath .githooks` (rodar uma vez por
+# clone/pasta de trabalho — arquivo tracked, mas o core.hooksPath é config
+# local, não vem sozinho de um `git clone`/`git pull`). Ver CLAUDE.md.
+
+npm test
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "npm test falhou — push cancelado."
+  echo "Corrija os testes (ou reverta a mudança) antes de enviar."
+  echo "Pra pular em emergência: git push --no-verify (evite usar)."
+  exit 1
+fi
+
+exit 0

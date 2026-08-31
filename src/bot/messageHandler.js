@@ -34,6 +34,29 @@ const RATE_LIMIT_DEFAULT_PAUSE_MIN    = 30;
 // phone -> { texts: string[], jid: string, timer: Timeout, presenceTimer: Interval }
 const pendingBuffers = new Map();
 
+// Serializa chamadas de respondToMessage() por telefone. Sem isso, duas
+// rajadas do mesmo cliente espaçadas mais que debounce_seconds (cada uma
+// dispara seu próprio timer/turno em bufferMessage) podiam ter dois
+// respondToMessage() rodando ao mesmo tempo pro mesmo telefone: se o
+// primeiro turno ainda estivesse no meio de um sendMessage()/db.run() lento
+// (rede ruim, socket do WhatsApp reconectando) quando o segundo turno
+// terminasse seu próprio debounce, o segundo lia wasRecentlySent() ANTES do
+// primeiro terminar de gravar sua resposta — os dois mandavam a mesma
+// mensagem de fallback/off_hours pro cliente. Mesma classe de bug já
+// corrigida na Eva "grande" (`C:\Sistemas\eva-test`, respondToConversation()
+// serializado por conversa) — aqui não há tabela `conversations`, então a
+// fila é por telefone direto.
+const phoneLocks = new Map();
+
+function runSerialized(phone, fn) {
+  const previous = phoneLocks.get(phone) || Promise.resolve();
+  const next = previous.then(fn, fn).finally(() => {
+    if (phoneLocks.get(phone) === next) phoneLocks.delete(phone);
+  });
+  phoneLocks.set(phone, next);
+  return next;
+}
+
 async function getConfigValue(key) {
   return (await db.get('SELECT value FROM config WHERE key = ?', [key]))?.value || '';
 }
@@ -199,7 +222,7 @@ async function bufferMessage(phone, jid, text, sendMessage, sock) {
   entry.timer = setTimeout(() => {
     const combined = entry.texts.join('\n');
     clearBuffer(phone);
-    respondToMessage(phone, jid, combined, sendMessage).catch(err =>
+    runSerialized(phone, () => respondToMessage(phone, jid, combined, sendMessage)).catch(err =>
       console.error('[bot] Erro ao responder mensagem agrupada:', err)
     );
   }, delayMs);

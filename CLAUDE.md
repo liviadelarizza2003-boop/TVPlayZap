@@ -240,3 +240,60 @@ não confirmadas: conexão WebSocket "zumbi" (aberta na memória mas morta de
 verdade) ou limite anti-spam do WhatsApp por repetição de teste pro mesmo
 número em pouco tempo. Próximo passo era checar do lado do celular que
 recebe se aparece algum check (cinza/azul) nas mensagens de teste.
+
+## Race condition em `respondToMessage()` — corrigido (2026-08-31, sincronização automática da Eva grande)
+
+Portado de um bug real que a Eva "grande" (`C:\Sistemas\eva-test`) confirmou
+contra produção em 26/08/2026 (commit `0823a3f`, ver `EVA_SYNC_LOG.md`): duas
+rajadas do mesmo cliente espaçadas mais que `debounce_seconds` viram dois
+turnos independentes em `bufferMessage()` (cada rajada dispara seu próprio
+timer). Se o primeiro turno ainda estivesse no meio de um `sendMessage()`/
+`db.run()` lento (rede ruim, socket do WhatsApp reconectando — não é raro
+com Baileys) quando o segundo turno terminasse seu próprio debounce, os dois
+`respondToMessage()` rodavam ao mesmo tempo pro mesmo telefone: o segundo
+lia `wasRecentlySent()` **antes** do primeiro terminar de gravar sua
+resposta no banco, então o dedupe não via nada pra suprimir e os dois
+mandavam a mesma mensagem de fallback/fora-de-horário pro cliente.
+
+Na Eva grande a correção serializa por `conversation_id` (ela tem tabela
+`conversations`); aqui não existe essa tabela, então a fila é por telefone
+direto — `runSerialized()` (`src/bot/messageHandler.js`) encadeia chamadas
+de `respondToMessage()` pro mesmo telefone numa fila de promises (telefones
+diferentes continuam respondendo em paralelo, sem uma esperar a outra).
+
+**Verificado** com um teste reproduzindo o cenário (write lento no mock de
+`db.run` pra forçar a janela de corrida): sem a fila, a suíte pegava 2
+mensagens de fallback enviadas pro mesmo cliente; com a fila, só 1 — a
+segunda checagem de dedupe já vê a gravação da primeira. Confirmado
+quebrando `runSerialized()` de propósito (`return fn()` sem fila) e revertido
+depois, mesmo padrão da Eva grande.
+
+**Nova suíte permanente:** `test/messageHandlerTurns.js` (`npm test` agora
+roda `test/regression.js && test/messageHandlerTurns.js`) — primeira
+cobertura de `messageHandler.js` neste repo (antes só `faqSearch.js` tinha
+teste). Cobre o cenário de corrida acima e confirma que telefones diferentes
+não ficam bloqueados um pelo outro (a fila é por telefone, não global).
+
+## Node travado em 22.x + hook de pre-push (2026-08-31, sincronização automática da Eva grande)
+
+Duas correções de infraestrutura portadas da Eva grande, que roda no mesmo
+tipo de deploy (Render, push já é deploy):
+
+- **`.node-version` (`22`) + `package.json` `engines.node` (`22.x`, era
+  `>=18`).** A Eva grande teve um crash real no boot em produção
+  (`Connection terminated unexpectedly` ao conectar no Postgres) porque o
+  Render escolheu sozinho a versão mais nova disponível (26.8.1) numa faixa
+  aberta (`>=18`) — `.node-version` tem prioridade mais alta e evita essa
+  escolha automática. Esta Eva Lite tinha a mesma faixa aberta (`>=18`) e o
+  mesmo risco, mesmo sem ter sofrido o crash ainda — corrigido
+  preventivamente.
+- **`.githooks/pre-push`** roda `npm test` antes de qualquer push e cancela
+  se algum caso falhar — projeto não tem CI, e o push pro `main` já é o
+  deploy no Render, então esse hook é o único gate automático hoje.
+  **Precisa ativar uma vez por pasta de trabalho** (`git config
+  core.hooksPath .githooks` — config local do git, não vem de um
+  `git clone`/`git pull` sozinho); sem isso o hook fica sem efeito, sem
+  nenhum aviso visível. Escape hatch pra emergência: `git push --no-verify`.
+  **Esta sincronização automática não roda `git config` sozinha** (fora do
+  escopo de mudanças automáticas de configuração) — quem for trabalhar
+  nesta pasta precisa rodar o comando acima manualmente.
