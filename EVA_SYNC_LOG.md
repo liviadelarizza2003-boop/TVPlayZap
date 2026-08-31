@@ -22,8 +22,9 @@ repo), seção "⚠️ Produto-irmão".
 
 ## Último commit da Eva revisado
 
-`399dac0c3745fee1fb2cee59f6bc8181d2920740` (branch `dev`, 2026-08-25 —
-"Calibra confiança da IA pelo embasamento real, não só finish_reason")
+`601f79bbb1d59e536996ef06d4f4749761690004` (branch `dev`, 2026-08-28 —
+"Adiciona backup automático diário (GitHub Actions) + scripts de
+recuperação")
 
 ## Histórico de sincronizações
 
@@ -139,6 +140,74 @@ descartados sem ação.
 - **Confiança real da IA (`blendConfidence`)** — não há resposta livre por
   IA nesta Lite, só FAQ fixo + fallback fixo; não existe `confidence` de IA
   nenhum pra calibrar.
+
+**Se revisar essa sessão depois:** o commit-base acima já reflete o estado
+da Eva analisado nesta sessão — próxima sincronização parte dele.
+
+### 2026-08-31 — rotina semanal automática (baseline `399dac0` → `601f79b`, 11 commits)
+
+**Motivo:** execução agendada normal do `sync-eva-lite`, sem gatilho de
+incidente.
+
+**Portado** (commit local `9f893af`, não enviado pro GitHub/Render):
+- **Race condition em `respondToMessage()`** (Eva: `0823a3f`/`f0dcfab`, fix +
+  suíte de teste) — duas rajadas do mesmo cliente espaçadas mais que
+  `debounce_seconds` podiam disparar `respondToMessage()` em paralelo pro
+  mesmo telefone; se a primeira ainda estivesse gravando (rede lenta,
+  `sendMessage`/`db.run`), a segunda lia `wasRecentlySent()` antes da
+  primeira terminar e duplicava a mensagem de fallback/fora-de-horário. Na
+  Eva a fila é por `conversation_id`; aqui, sem essa tabela, é por telefone
+  direto (`runSerialized()`, `src/bot/messageHandler.js`). Nova suíte
+  permanente `test/messageHandlerTurns.js` (`npm test` agora roda as duas
+  suítes) — verificado quebrando a fila de propósito e confirmando que o
+  teste acusa a duplicata antes de reverter, mesmo padrão da Eva.
+- **`.node-version=22` + `engines.node=22.x`** (Eva: `63eeb46`) — esta Eva
+  Lite tinha a mesma faixa aberta (`>=18`) que causou o crash de boot na Eva
+  grande no Render (`Connection terminated unexpectedly`, Node escolhido
+  sozinho pra 26.8.1). Corrigido preventivamente, sem ter sofrido o crash
+  ainda.
+- **`.githooks/pre-push`** (Eva: `9896de7`) roda `npm test` antes de
+  qualquer push, mesmo racional da Eva (sem CI, push pro `main` já é deploy
+  no Render). **Não ativado sozinho** — precisa `git config core.hooksPath
+  .githooks` uma vez por pasta de trabalho; esta sincronização automática
+  não roda comando de configuração de git por conta própria, documentado em
+  `CLAUDE.md`.
+
+**Avaliado e descartado (não aplicável à Lite hoje):**
+- **Correção do `information_schema.tables` sem `table_schema='public'`**
+  (Eva: `b40c79f`, bug real no Supabase — batia na `realtime.messages` de
+  fábrica e achava que o schema já existia) — mecanismo não existe aqui.
+  `initSchema()` desta Lite não faz checagem de "schema já existe" nenhuma,
+  só roda `schema.sql` inteiro (`CREATE TABLE IF NOT EXISTS`) em todo boot,
+  sempre idempotente. O bug estruturalmente não tem onde acontecer.
+- **`datetime(text,text)` no compat SQLite→Postgres + transcrição de áudio
+  de histórico** (Eva: `0823a3f`, dois bugs em `importHistorySync()`) — esta
+  Lite não tem `importHistorySync()` nem reimportação de histórico via
+  reconexão (confirmado: nenhuma referência a `importHistorySync`/
+  `transcribeAudio` no repo).
+- **Tudo relacionado ao painel de conversas em tempo real** (Eva:
+  `5b09b86` atualização do menu esquerdo, `af69632` lista atualizando
+  sozinha, `9c81ca6` duplicata de encaminhamento por clique repetido) — o
+  `frontend/js/dashboard.js` desta Lite é só stats/vencimentos, sem lista de
+  conversas, WebSocket em tempo real, nem função de encaminhar mensagem.
+  Mecanismo não existe.
+- **Integração Quitta** (Eva: `a703dfa` aviso de cobrança, `89bee45` banner
+  de cobrança por deep link) — integração exclusiva do tenant Imóveis Santa
+  Cruz, não existe nesta Lite.
+- **Backup automático diário via GitHub Actions** (Eva: `601f79b`) — **não
+  portado, fica como sugestão pra decisão humana.** A Eva grande já tinha
+  uma crise real (Postgres free do Render expirado, ver memória
+  `project_eva_render_postgres_expired_20260827`) que motivou essa
+  salvaguarda; esta Eva Lite também está no Supabase free e corre o mesmo
+  risco de pausa/expiração, mas o script da Eva é específico do schema dela
+  (tabelas `public` + `quitta`) e adaptar exigiria: (1) mapear pra tabelas
+  desta Lite (`messages_log`, `config`, `human_pauses`, `clients`, `faq`
+  etc.), (2) criar a secret `DATABASE_URL` no GitHub Actions deste repo, (3)
+  decidir se `messages_log` (potencialmente grande, com dado de cliente)
+  deve mesmo ir pra um backup versionado no repo do jeito que a Eva faz.
+  Envolve escolha de escopo/dado sensível, não só um bug pra corrigir —
+  melhor a usuária decidir isso ela mesma que forçar um port. Sugestão fica
+  registrada aqui pra próxima vez que ela mexer em backup/infra.
 
 **Se revisar essa sessão depois:** o commit-base acima já reflete o estado
 da Eva analisado nesta sessão — próxima sincronização parte dele.
