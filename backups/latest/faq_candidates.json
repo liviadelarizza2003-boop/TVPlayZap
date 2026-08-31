@@ -1,0 +1,119 @@
+[
+  {
+    "id": 1,
+    "question": "Como faço para renovar meu plano?",
+    "answer": "Para renovar seu plano, [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Podemos renovar o plano desse mês?\",\"+55 14 99767-8661\",\"https://smartone-iptv.com/plugin/smart_one/main_generate\",\"O Cezar disse que está funcionando normalmente.\"]",
+    "status": "approved",
+    "reviewed_at": "2026-08-12T16:05:08.497Z",
+    "created_at": "2026-08-12T16:01:59.702Z"
+  },
+  {
+    "id": 2,
+    "question": "Como posso pagar?",
+    "answer": "Você pode pagar via [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Quero sim, meu marido não reclamou mais. O que você prefere? PIX ou $?\",\"Posso mandar pro seu PIX mesmo?\"]",
+    "status": "approved",
+    "reviewed_at": "2026-08-12T16:05:43.310Z",
+    "created_at": "2026-08-12T16:01:59.888Z"
+  },
+  {
+    "id": 3,
+    "question": "Meu plano está funcionando?",
+    "answer": "Seu plano está [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Voltou a funcionar\",\"O Cezar disse que está funcionando normalmente.\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-12T16:05:56.083Z",
+    "created_at": "2026-08-12T16:02:00.072Z"
+  },
+  {
+    "id": 4,
+    "question": "Como procuro filmes?",
+    "answer": "Você pode procurar filmes [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Uma pergunta, pra procurar os filmes que eu gosto, tenho que escrever da mesma forma como está escrito em inglês?\"]",
+    "status": "approved",
+    "reviewed_at": "2026-08-12T16:06:35.684Z",
+    "created_at": "2026-08-12T16:02:00.256Z"
+  },
+  {
+    "id": 5,
+    "question": "Preciso de ajuda com o login?",
+    "answer": "Se você está tendo problemas com o login, [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Preciso logar novamente ou já está ok?\",\"Não fiz pra ter certeza de que sua conta está desbloqueada\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-16T09:43:23.101Z",
+    "created_at": "2026-08-12T16:02:00.441Z"
+  },
+  {
+    "id": 6,
+    "question": "Quais são os horários de atendimento?",
+    "answer": "Nossos horários de atendimento são [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"No momento não estamos abertos. Abriremos às 18:30\\nNossos horários para hoje são: \\n*-* 00:00 às 00:50.\\n*-* 18:30 às 23:59.\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-13T16:07:08.442Z",
+    "created_at": "2026-08-12T16:02:00.626Z"
+  },
+  {
+    "id": 7,
+    "question": "Como posso entrar em contato?",
+    "answer": "Você pode entrar em contato conosco via [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"*Informações* \\n *Telefones:* 4004-9043 \\n *Nosso site:* www.laboratoriodamulher.com.br \\n *Endereço:*  \\n *Horário de Atendimento:*  \\n*Outros contatos:* https://api.whatsapp.com/send?phone=5511934505884\",\"Agradecemos o seu contato! Volte sempre que precisar!\",\"*Facilite o contato entre seus clientes e sua empresa!*\\n\\nCada oportunidade que você oferece aos seus clientes para iniciar conversas é uma chance de construir relacionamentos melhores e expandir seus negócios.\\n\\n📱 Insira QR codes em embalagens e recibos.\\n\\n🔗 Adicione um link curto e um botão do WhatsApp aos seus perfis sociais.\\n\\n👀 Alcance novos clientes em grande escala com anúncios de clique para o WhatsApp.\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-13T16:07:17.271Z",
+    "created_at": "2026-08-12T16:02:00.810Z"
+  },
+  {
+    "id": 8,
+    "question": "O que está acontecendo com o serviço?",
+    "answer": "O serviço está [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"https://youtu.be/Et1UjOCHmc8?si=CvNS5k9x7k3vzIO4\",\"http://cinemax.daxy.top/\",\"Oi! Que eficiência?!\",\"Sim, a dor não passou... hoje tive dificuldade pra segurar a garrafa de café... mexeu com meu café?! Absurdo!\",\"Na verdade, está difícil pra respirar, tossir, espirrar, dormir...\",\"Aí voltei pra mudar o remédio\",\"Já, estou tomando soro com injeção\",\"Cheguei aqui tem 1 hora, aproximadamente\",\"Mas já tô indo embora\",\"Tô tomando também, eles são bons mesmo\",\"Sim, o soro acabou de acabar.\",\"Vai que você acha meu *sim* seco kkkkkkkk\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-16T09:43:26.410Z",
+    "created_at": "2026-08-12T16:02:00.995Z"
+  },
+  {
+    "id": 9,
+    "question": "Posso instalar o aplicativo?",
+    "answer": "Sim, você pode instalar o aplicativo [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Pronto, já instalei tanto do tablet quando do celular\",\"Endereço mec: 02:EF:31:25:38:7E:BF:F8\",\"Desisnstalando este então ^^\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-13T16:07:32.448Z",
+    "created_at": "2026-08-12T16:02:01.179Z"
+  },
+  {
+    "id": 10,
+    "question": "O que você acha?",
+    "answer": "Agradecemos seu feedback! [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Tá. Você tinha umas idéias de triagem também, como as mensagens seriam recebidas... Podemos ver como implementar. \\nPodemos ver também algum meio de o WhatsApp enviar uma mensagem lembrando sobre o pagamento... Não sei ainda como faríamos, mas é possível.\\n\\nVocê teria como deixar um computador com isso rodando em casa ou precisa que rode apenas no celular?\",\"*LivIA | Assistente Virtual:*\\nFoi bom falar com você! Até a próxima! 💚\\n\\n`Seu atendimento foi encerrado`\",\"Rodrigo Tiago Teixeira\",\"Ele vai mandar o pix pra voce ai\",\"Show de bola\",\"Claro, sem problemas\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-16T09:43:29.531Z",
+    "created_at": "2026-08-12T16:02:01.364Z"
+  },
+  {
+    "id": 11,
+    "question": "Como faço para conectar meu dispositivo ao WhatsApp?",
+    "answer": "Para conectar seu dispositivo ao WhatsApp, [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Lá tem um QR Code ou um lugar para você clicar e deve receber uma senha para o robô conectar ao seu WhatsApp.\",\"Depois que gerar este código de 8 dígitos, você vai no celular, em conectar dispositivo. \\n\\nNo mesmo celular, abrir o WhatsApp → Configurações → Aparelhos conectados → Conectar um aparelho → Conectar com número de telefone (essa opção geralmente fica embaixo, depois que abre a câmera pra escanear) e digitar o código gerado\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-13T16:16:58.367Z",
+    "created_at": "2026-08-12T16:02:15.485Z"
+  },
+  {
+    "id": 12,
+    "question": "Qual é o valor da mensalidade da TV Play?",
+    "answer": "O valor da mensalidade da TV Play é [COMPLETAR].",
+    "source_messages": "[\"É 30 reais a mensalidade da tv\"]",
+    "status": "approved",
+    "reviewed_at": "2026-08-13T16:16:35.942Z",
+    "created_at": "2026-08-12T16:02:15.666Z"
+  },
+  {
+    "id": 13,
+    "question": "Como posso renovar meu plano ou obter ajuda?",
+    "answer": "Para renovar seu plano ou obter ajuda, [COMPLETAR]. Qualquer dúvida é só chamar! 😊",
+    "source_messages": "[\"Boa Noite, me manda o número do pix\",\"Vá em WhatsApp?\"]",
+    "status": "rejected",
+    "reviewed_at": "2026-08-16T09:43:35.624Z",
+    "created_at": "2026-08-12T16:02:15.847Z"
+  }
+]

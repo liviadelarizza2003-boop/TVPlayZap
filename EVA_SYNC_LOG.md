@@ -194,20 +194,58 @@ incidente.
 - **Integração Quitta** (Eva: `a703dfa` aviso de cobrança, `89bee45` banner
   de cobrança por deep link) — integração exclusiva do tenant Imóveis Santa
   Cruz, não existe nesta Lite.
-- **Backup automático diário via GitHub Actions** (Eva: `601f79b`) — **não
-  portado, fica como sugestão pra decisão humana.** A Eva grande já tinha
-  uma crise real (Postgres free do Render expirado, ver memória
-  `project_eva_render_postgres_expired_20260827`) que motivou essa
-  salvaguarda; esta Eva Lite também está no Supabase free e corre o mesmo
-  risco de pausa/expiração, mas o script da Eva é específico do schema dela
-  (tabelas `public` + `quitta`) e adaptar exigiria: (1) mapear pra tabelas
-  desta Lite (`messages_log`, `config`, `human_pauses`, `clients`, `faq`
-  etc.), (2) criar a secret `DATABASE_URL` no GitHub Actions deste repo, (3)
-  decidir se `messages_log` (potencialmente grande, com dado de cliente)
-  deve mesmo ir pra um backup versionado no repo do jeito que a Eva faz.
-  Envolve escolha de escopo/dado sensível, não só um bug pra corrigir —
-  melhor a usuária decidir isso ela mesma que forçar um port. Sugestão fica
-  registrada aqui pra próxima vez que ela mexer em backup/infra.
+- **Backup automático diário via GitHub Actions** (Eva: `601f79b`) — inicialmente
+  deixado como sugestão pra decisão humana (ver texto original abaixo,
+  mantido pra rastro). **Atualização no mesmo dia: a usuária pediu
+  explicitamente ("precisamos do backup para tudo, é um risco que não
+  podemos correr") — implementado em seguida, commit local separado, ver
+  entrada "2026-08-31 (mesmo dia, pedido explícito da usuária)" logo abaixo.**
+  Texto original da avaliação: script da Eva é específico do schema dela
+  (tabelas `public` + `quitta`) e adaptar exigiria mapear pra tabelas desta
+  Lite, criar a secret `DATABASE_URL` no GitHub Actions deste repo, e
+  decidir se `messages_log` (dado de cliente) deveria entrar no backup —
+  envolvia escolha de escopo/dado sensível, por isso não foi forçado sem
+  perguntar antes.
 
 **Se revisar essa sessão depois:** o commit-base acima já reflete o estado
 da Eva analisado nesta sessão — próxima sincronização parte dele.
+
+### 2026-08-31 (mesmo dia, pedido explícito da usuária) — backup automático implementado
+
+**Motivo:** resposta direta da usuária ao resumo da sincronização acima —
+"Precisamos do backup para tudo, é um risco que não podemos correr." Não é
+mais uma sugestão condicional, é pedido explícito.
+
+**Implementado** (não commitado neste log ainda porque ainda não houve
+`git commit` desta parte no momento em que este texto foi escrito — ver
+commit real no histórico do `git log` deste repo, mensagem "Adiciona backup
+automático diário..."):
+- `scripts/backup_scheduled.js` — adaptado do script da Eva grande pro
+  schema desta Lite: exporta `config`, `clients`, `faq`, `faq_candidates`,
+  `client_candidates`, `renewal_notifications`, `human_pauses` e
+  **`messages_log`** (diferente da Eva grande, que deixa mensagens de fora —
+  ver `CLAUDE.md`, seção "Backup automático diário", pro porquê da
+  diferença) pra `backups/latest/*.json`.
+- **Exclusões deliberadas de credencial/sessão**, decisão tomada sem
+  perguntar (fora do escopo do pedido, mas necessária pra não trocar "risco
+  de perder dado" por "risco de vazar credencial"): tabela `whatsapp_keys`
+  inteira (sessão Baileys) e as chaves `whatsapp_creds`/`admin_password_hash`
+  dentro de `config`. Verificado depois de rodar: nenhuma das três aparece
+  no resultado.
+- `.github/workflows/backup-db.yml` — roda o script diariamente (03:00 BRT)
+  e comita `backups/latest/` se houve mudança. **Precisa da secret
+  `DATABASE_URL` no GitHub Actions deste repo — ainda não confirmado se a
+  usuária configurou; sem isso o workflow falha todo dia sem avisar
+  ninguém.**
+- **Testado rodando de verdade contra o Supabase de produção** (não um
+  mock — script só faz `SELECT`, sem risco de escrita/Baileys): 8 tabelas
+  exportadas com sucesso, confirmado por busca no JSON que as 3 chaves
+  sensíveis não vazaram.
+
+**Não implementado, fica pendente:**
+- Checagem semanal de saúde do backup (a Eva grande tem uma tarefa
+  agendada própria, `check-supabase-backup-health`) — não pedido
+  explicitamente ainda, mas o mesmo risco de "workflow quebrado sem
+  ninguém perceber" existe aqui também.
+- Confirmar que a secret `DATABASE_URL` foi de fato configurada no GitHub
+  — ação de conta, só a usuária pode fazer.

@@ -1,0 +1,87 @@
+[
+  {
+    "key": "ai_disclosure_message",
+    "value": "Sou a Eva, assistente virtual da TV Play! 😊 Posso te ajudar por aqui, e se precisar de algo mais específico chamo a equipe pra você.",
+    "updated_at": "2026-08-17T20:37:07.501Z"
+  },
+  {
+    "key": "auto_reply_dedupe_hours",
+    "value": "3",
+    "updated_at": "2026-08-25T23:05:22.034Z"
+  },
+  {
+    "key": "business_name",
+    "value": "TV Play",
+    "updated_at": "2026-08-12T13:27:54.693Z"
+  },
+  {
+    "key": "debounce_seconds",
+    "value": "15",
+    "updated_at": "2026-08-25T23:05:22.034Z"
+  },
+  {
+    "key": "fallback_message",
+    "value": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "updated_at": "2026-08-17T20:37:06.957Z"
+  },
+  {
+    "key": "history_synced",
+    "value": "true",
+    "updated_at": "2026-08-12T16:01:53.743Z"
+  },
+  {
+    "key": "human_pause_hours",
+    "value": "6",
+    "updated_at": "2026-08-25T23:05:22.034Z"
+  },
+  {
+    "key": "off_hours_message",
+    "value": "Olá! Nosso horário de atendimento é das {start}h às {end}h. Retornaremos em breve! 😊",
+    "updated_at": "2026-08-17T20:37:07.143Z"
+  },
+  {
+    "key": "owner_phone",
+    "value": "5514998998005",
+    "updated_at": "2026-08-12T13:27:54.877Z"
+  },
+  {
+    "key": "rate_limit_max_messages",
+    "value": "15",
+    "updated_at": "2026-08-26T00:38:10.251Z"
+  },
+  {
+    "key": "rate_limit_pause_minutes",
+    "value": "30",
+    "updated_at": "2026-08-26T00:38:10.251Z"
+  },
+  {
+    "key": "rate_limit_window_minutes",
+    "value": "5",
+    "updated_at": "2026-08-26T00:38:10.251Z"
+  },
+  {
+    "key": "reminder_message",
+    "value": "Olá, {name}! 👋 Passando pra lembrar que seu plano vence dia *{due_date}*. Quer renovar? É só me avisar! 😊",
+    "updated_at": "2026-08-17T20:37:07.322Z"
+  },
+  {
+    "key": "renewal_cycle_days",
+    "value": "30",
+    "updated_at": "2026-08-13T17:57:18.943Z"
+  },
+  {
+    "key": "trial_message",
+    "value": "E aí {name}! Tudo bem? Seu período de teste de 24h terminou — gostou? Quer assinar o plano? 😊",
+    "updated_at": "2026-08-17T20:37:07.681Z"
+  },
+  {
+    "key": "working_hours_end",
+    "value": "23",
+    "updated_at": "2026-08-12T13:27:55.244Z"
+  },
+  {
+    "key": "working_hours_start",
+    "value": "7",
+    "updated_at": "2026-08-12T13:27:55.060Z"
+  }
+]

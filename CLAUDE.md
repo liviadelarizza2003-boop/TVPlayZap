@@ -297,3 +297,20 @@ tipo de deploy (Render, push já é deploy):
   **Esta sincronização automática não roda `git config` sozinha** (fora do
   escopo de mudanças automáticas de configuração) — quem for trabalhar
   nesta pasta precisa rodar o comando acima manualmente.
+
+## Backup automático diário (adicionado 31/08/2026, pedido explícito da usuária: "precisamos do backup para tudo, é um risco que não podemos correr")
+
+Portado da Eva grande (`scripts/backup_scheduled.js` + `.github/workflows/backup-db.yml` lá, ver `EVA_SYNC_LOG.md`), adaptado pro schema desta Eva Lite — **`scripts/backup_scheduled.js`** exporta as tabelas de negócio pra `backups/latest/*.json`, comitado no próprio repositório privado a cada execução via **`.github/workflows/backup-db.yml`** (roda 03:00 BRT todo dia, ou sob demanda via "Run workflow" na aba Actions do GitHub).
+
+**Diferença importante em relação à Eva grande: `messages_log` ENTRA no backup aqui, e lá não entra.** A Eva grande deixa mensagens de fora de propósito porque `importHistorySync()` resincroniza o histórico do WhatsApp sozinho numa reconexão nova — esta Eva Lite não tem esse mecanismo, então perder `messages_log` seria perda definitiva. Consequência aceita: o backup passa a conter conteúdo real de mensagem de cliente (texto + telefone) dentro do histórico do Git, mesmo repositório sendo privado — decisão consciente, não um descuido.
+
+**O que fica de fora, de propósito, por ser credencial/sessão e não dado de negócio:**
+- Tabela `whatsapp_keys` inteira — chaves do protocolo Signal do Baileys (sessão de login ativa do WhatsApp). Reconectar via QR novo é o caminho de recuperação, não um backup versionado.
+- Chave `whatsapp_creds` dentro de `config` — credenciais da sessão (mesmo motivo acima).
+- Chave `admin_password_hash` dentro de `config` — hash bcrypt da senha do painel; não tem motivo pra duplicar num backup versionado, trocar a senha continua funcionando normal sem depender disso estar lá.
+
+**Pendência que só a usuária pode resolver:** o workflow precisa da secret `DATABASE_URL` configurada em Settings → Secrets and variables → Actions **do repositório no GitHub** — sem isso, o workflow falha silenciosamente todo dia às 3h sem avisar ninguém. Confirmar que foi configurada antes de contar com o backup rodando de verdade (o script já foi testado rodando manualmente contra o Supabase real e funcionou — só falta essa configuração no lado do GitHub, que é ação de conta/infra, fora do alcance da IA).
+
+Testado ao vivo (31/08/2026) rodando `node scripts/backup_scheduled.js` contra o Supabase de produção: 8 tabelas exportadas (config, clients, faq, faq_candidates, client_candidates, renewal_notifications, human_pauses, messages_log), confirmado por busca direta no JSON que nenhuma das 3 chaves sensíveis acima aparece no resultado.
+
+**Sem checagem semanal de saúde ainda** (a Eva grande tem uma tarefa agendada própria pra isso, `check-supabase-backup-health`) — considerar pedir o mesmo aqui se o backup for realmente crítico pro negócio, senão um workflow quebrado (ex.: secret nunca configurada) só seria percebido no dia em que o backup fizer falta de verdade.
