@@ -15518,5 +15518,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-08-30T20:21:47.862Z"
+  },
+  {
+    "id": 1566,
+    "phone": "5514981360207",
+    "direction": "outbound",
+    "body": "Olá, Lazaro! 👋 Passando pra lembrar que seu plano vence dia *03/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-08-31T22:52:53.268Z"
+  },
+  {
+    "id": 1567,
+    "phone": "5514997732295",
+    "direction": "outbound",
+    "body": "Olá, João AP Veloso! 👋 Passando pra lembrar que seu plano vence dia *03/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-08-31T22:53:25.882Z"
   }
 ]
