@@ -249,3 +249,57 @@ automático diário..."):
   ninguém perceber" existe aqui também.
 - Confirmar que a secret `DATABASE_URL` foi de fato configurada no GitHub
   — ação de conta, só a usuária pode fazer.
+
+### 2026-09-01 (ao vivo, mid-sessão) — corrida entre eco `fromMe` e log da própria resposta do bot
+
+**Motivo:** usuária investigando na Eva grande (tenant Imóveis Santa Cruz)
+por que uma saudação automática ("Imobiliária Santa Cruz agradece seu
+contato...") aparecia no painel atribuída a "Atendente (fora do painel)"/
+humano, quando ela tinha certeza (velocidade da resposta, estilo do texto)
+de que não podia ter sido um humano digitando. Achado: `logMessageFull()`
+(usado por toda resposta automática da Eva — FAQ/IA) fazia `sock.sendMessage()`
+e só DEPOIS logava no banco; se o eco `fromMe` do próprio envio (evento
+separado do Baileys) fosse processado antes desse log completar, o branch de
+"resposta manual fora do painel" gravava a linha primeiro, e o INSERT da Eva
+(sem `ON CONFLICT`) batia no índice único de `wa_message_id` e não conseguia
+corrigir depois — sobrava só a atribuição errada. Corrigido lá com
+`ON CONFLICT ... DO UPDATE` reclamando a atribuição correta (mesmo padrão já
+usado por outra corrida idêntica, documentada em `eva-test/CLAUDE.md`,
+"Mensagem do painel duplicando", 29/07/2026).
+
+**Avaliado e PORTADO — a mesma classe de corrida existe aqui, com
+consequência pior:** `sendMessage()` (`src/bot/index.js`) chamava
+`sock.sendMessage()` e só depois lia `result.key.id` pra registrar em
+`botSentMessageIds` — mesma janela de tempo entre "a mensagem já foi
+enviada de verdade" e "o bot já sabe que foi ele quem enviou". Se o eco
+`fromMe` chegasse (`messages.upsert`) antes de `botSentMessageIds.add(id)`
+rodar, `handleOwnMessage()` não reconheceria o id, trataria a resposta
+automática do próprio bot como "resposta manual digitada no celular" — e
+além de logar errado (`answered_by='human_manual'`), chamaria
+`setHumanPause(phone)`, **pausando de verdade as respostas automáticas pra
+esse cliente por `human_pause_hours` (default 6h)** sem nenhum humano ter
+assumido. Consequência prática pior que na Eva grande (lá é só atribuição
+errada no painel; aqui silenciaria o bot pro cliente de verdade).
+
+**Correção, adaptada à arquitetura desta Lite** (não dá pra usar
+`ON CONFLICT` — `botSentMessageIds` é um `Set` em memória, não linha de
+banco): em vez de descobrir o id da mensagem *depois* do envio, `sendMessage()`
+agora gera o id **antes** (`generateMessageIDV2`, já exportado pelo
+`@whiskeysockets/baileys` instalado neste repo), registra em
+`botSentMessageIds` **antes** de chamar `sock.sendMessage()`, e passa esse id
+explicitamente via `{ messageId: id }` (opção documentada do próprio Baileys,
+confirmada lendo `node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js`).
+Fecha a janela de corrida por completo (o id já é conhecido antes de qualquer
+I/O), em vez de só reduzi-la.
+
+**Testado:** `npm test` (`test/regression.js` + `test/messageHandlerTurns.js`)
+passa sem mudança — nenhum dos dois cobre `bot/index.js`/Baileys real
+(exigiria mockar o socket), então esta corrida específica não ficou coberta
+por teste automatizado; validado só por leitura do código-fonte da lib
+instalada, não foi reproduzida ao vivo contra um WhatsApp real.
+
+**Não avaliado ainda:** se essa mesma corrida (eco chegando antes do log)
+também afeta os pontos de `messages_log` fora do `respondToMessage()` normal
+(ex.: `ai_disclosure`, `off_hours`, `fallback` — todos chamam a mesma
+`sendMessage()` corrigida, então já se beneficiam do fix, mas não foram
+auditados individualmente por um cenário de corrida próprio).

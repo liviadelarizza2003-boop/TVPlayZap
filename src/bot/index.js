@@ -16,6 +16,7 @@ const {
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore,
   isJidBroadcast,
+  generateMessageIDV2,
 } = require('@whiskeysockets/baileys');
 
 const { handleMessage, handleOwnMessage } = require('./messageHandler');
@@ -69,12 +70,19 @@ function broadcastToListeners(payload) {
  */
 async function sendMessage(jid, text) {
   if (!sock || !connected) throw new Error('Bot não conectado ao WhatsApp');
-  const result = await sock.sendMessage(jid, { text });
-  if (result?.key?.id) {
-    botSentMessageIds.add(result.key.id);
-    setTimeout(() => botSentMessageIds.delete(result.key.id), 60_000);
-  }
-  return result;
+  // Gera o id ANTES de enviar (em vez de ler de `result.key.id` depois do
+  // await) e já registra em `botSentMessageIds` antes de qualquer I/O — o
+  // eco `fromMe` desse envio pode chegar via `messages.upsert` antes do
+  // `await sock.sendMessage()` sequer resolver (mesma corrida real já
+  // confirmada contra produção na Eva "grande", só que lá era uma corrida de
+  // INSERT no banco; aqui seria `handleOwnMessage` não achando o id ainda no
+  // Set, tratando a própria resposta automática do bot como resposta manual
+  // e pausando o bot pra esse cliente por `human_pause_hours` sem motivo).
+  // Registrar o id de antemão fecha essa janela por completo, não só reduz.
+  const id = generateMessageIDV2(sock.user?.id);
+  botSentMessageIds.add(id);
+  setTimeout(() => botSentMessageIds.delete(id), 60_000);
+  return sock.sendMessage(jid, { text }, { messageId: id });
 }
 
 // Exponha o sendMessage para os schedulers
