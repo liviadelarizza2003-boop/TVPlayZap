@@ -127,7 +127,7 @@ O `render.yaml` já está pronto (`render blueprint` — New → Blueprint no da
 - Build: `npm install` / Start: `npm start`
 - Plano free do Render (sem disco — não é suportado no free tier)
 - Clientes, FAQ, configurações **e a sessão de login do WhatsApp** ficam no Postgres do Supabase (`DATABASE_URL`), que sobrevive a restarts/redeploys/hibernação — não é mais preciso escanear o QR Code de novo a cada atualização de código
-- Ainda assim, considere um pinger (ex: [cron-job.org](https://cron-job.org)) batendo na URL a cada ~10 min pra reduzir a hibernação por inatividade — a sessão não é perdida se hibernar, mas o bot fica temporariamente offline até "acordar"
+- **Configure um pinger** (ex: [cron-job.org](https://cron-job.org)) batendo em `GET /healthz` a cada ~10 min — sem isso, o serviço hiberna por inatividade e o lembrete automático de vencimento (`node-cron` às 9h, `src/scheduler/renewalReminder.js`) não dispara porque o processo está dormindo nesse horário (a sessão do WhatsApp não é perdida ao hibernar, mas o bot fica temporariamente offline até "acordar")
 - `JWT_SECRET` é gerado automaticamente pelo Render
 - `DATABASE_URL`, `GROQ_API_KEY`, `BUSINESS_NAME`, `OWNER_PHONE`, `ADMIN_PASSWORD`, `RECOVERY_KEY` precisam ser preenchidos manualmente no painel do Render (marcados como `sync: false`)
 

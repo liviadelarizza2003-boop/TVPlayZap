@@ -43,6 +43,9 @@ const PORT   = process.env.PORT || 3200;
 app.use(express.json());
 app.use(cookieParser());
 
+// ── Health check (pinger externo, evita hibernação no plano free do Render) ─
+app.get('/healthz', (_req, res) => res.status(200).send('ok'));
+
 // ── Rotas da API ───────────────────────────────────────────────────────────
 app.use('/api/auth',       authRouter);
 app.use('/api/clients',    clientsRouter);
