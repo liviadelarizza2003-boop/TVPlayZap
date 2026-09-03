@@ -15538,5 +15538,15 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-08-31T22:53:25.882Z"
+  },
+  {
+    "id": 1568,
+    "phone": "553499279578",
+    "direction": "outbound",
+    "body": "Olá, Willian Martins! 👋 Passando pra lembrar que seu plano vence dia *18/08/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-02T16:00:17.166Z"
   }
 ]
