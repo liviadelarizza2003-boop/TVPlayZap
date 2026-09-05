@@ -250,5 +250,26 @@
     "sent_at": "2026-09-02T16:00:17.364Z",
     "due_date": "2026-08-18",
     "status": "sent"
+  },
+  {
+    "id": 37,
+    "client_id": 26,
+    "sent_at": "2026-09-05T00:35:55.914Z",
+    "due_date": "2026-09-03",
+    "status": "sent"
+  },
+  {
+    "id": 38,
+    "client_id": 23,
+    "sent_at": "2026-09-05T00:36:11.145Z",
+    "due_date": "2026-09-04",
+    "status": "sent"
+  },
+  {
+    "id": 39,
+    "client_id": 8,
+    "sent_at": "2026-09-05T00:36:19.174Z",
+    "due_date": "2026-09-04",
+    "status": "sent"
   }
 ]

@@ -15548,5 +15548,35 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-02T16:00:17.166Z"
+  },
+  {
+    "id": 1569,
+    "phone": "5514997732295",
+    "direction": "outbound",
+    "body": "Olá, João AP Veloso! 👋 Passando pra lembrar que seu plano vence dia *03/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-05T00:35:55.717Z"
+  },
+  {
+    "id": 1570,
+    "phone": "5514997678661",
+    "direction": "outbound",
+    "body": "Olá, Rodrigo Rosalem! 👋 Passando pra lembrar que seu plano vence dia *04/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-05T00:36:10.959Z"
+  },
+  {
+    "id": 1571,
+    "phone": "5514997905890",
+    "direction": "outbound",
+    "body": "Olá, TrailerRosa! 👋 Passando pra lembrar que seu plano vence dia *04/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-05T00:36:18.987Z"
   }
 ]
