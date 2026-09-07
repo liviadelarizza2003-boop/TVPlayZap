@@ -15578,5 +15578,35 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-05T00:36:18.987Z"
+  },
+  {
+    "id": 1572,
+    "phone": "5514997648403",
+    "direction": "outbound",
+    "body": "Tudo bem",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-06T21:38:11.355Z"
+  },
+  {
+    "id": 1573,
+    "phone": "5514997648403",
+    "direction": "outbound",
+    "body": "Estou a disposição",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-06T21:38:11.903Z"
+  },
+  {
+    "id": 1574,
+    "phone": "5514998300931",
+    "direction": "outbound",
+    "body": "Boa tarde",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-06T21:38:56.888Z"
   }
 ]
