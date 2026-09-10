@@ -102,6 +102,26 @@ async function runFaqSearchCases() {
     const result = await faqSearch('bom dia, tudo bem?');
     assert.equal(result, null, `esperava null, veio: ${JSON.stringify(result)}`);
   });
+
+  // Mesmo bug real confirmado em produção na Eva grande 09/09/2026 (ver
+  // eva-test/test/regression.js e o comentário de GREETING_TOKENS/
+  // isPureGreetingLeftover em src/engine/faqSearch.js): FAQ de saudação pura
+  // vencia com confidence=1 mesmo quando a mensagem tinha um pedido real
+  // junto — algoritmo idêntico aqui, mesmo risco.
+  state.faqItems = [
+    { id: 63, question: 'bom dia', keywords: 'bom dia, boa tarde, boa noite, oi, ola', answer: 'Olá! Tudo bem?', is_active: 1 },
+    { id: 1, question: 'tem plano mensal disponivel', keywords: 'tem plano mensal disponivel, precisando do plano, preciso do plano', answer: 'Sim, temos plano mensal!', is_active: 1 },
+  ];
+
+  await test('saudação pura ainda responde normalmente quando é só isso (não regride)', async () => {
+    const result = await faqSearch('Boa tarde, tudo bem?');
+    assert.ok(result && result.faqId === 63, `esperava FAQ 63 (saudação pura), veio: ${JSON.stringify(result)}`);
+  });
+
+  await test('saudação junto de pedido real não ofusca a FAQ com conteúdo de verdade', async () => {
+    const result = await faqSearch('Oi boa tarde, estou precisando do plano. Nada ainda??');
+    assert.ok(result && result.faqId === 1, `esperava FAQ 1 (pedido real), veio: ${JSON.stringify(result)}`);
+  });
 }
 
 (async () => {

@@ -303,3 +303,45 @@ também afeta os pontos de `messages_log` fora do `respondToMessage()` normal
 (ex.: `ai_disclosure`, `off_hours`, `fallback` — todos chamam a mesma
 `sendMessage()` corrigida, então já se beneficiam do fix, mas não foram
 auditados individualmente por um cenário de corrida próprio).
+
+### 2026-09-10 (ao vivo, mid-sessão) — saudação pura ofuscando FAQ com conteúdo real
+
+**Motivo:** usuária reportou, na Eva grande (tenant Imóveis Santa Cruz), que
+alguém perguntou se havia imóveis disponíveis e a Eva não indicou o site,
+como a FAQ deveria fazer. Investigação contra o Postgres de produção achou o
+caso real: contato mandou "Oi boa tarde,estou precisando alugar. Nada
+ainda??" (09/09/2026, 19:34) — a FAQ de saudação pura ("boa tarde" → "Olá!
+Tudo bem?") bateu confidence=1 (frase de 2 palavras, adjacente, na ordem —
+o algoritmo de `scorePhrase` não distinguia "a frase-gatilho é TODA a
+mensagem" de "a frase-gatilho é só o preâmbulo de um pedido real"), venceu a
+FAQ de imóvel disponível (que só alcançava um match espalhado, score 0.25,
+por falta de uma keyword cadastrada pra essa forma de dizer "preciso
+alugar") e o cliente só recebeu o cumprimento + transferência pra humano,
+nunca o link do site.
+
+**Avaliado e PORTADO — o algoritmo de `faqSearch.js` é idêntico aqui, mesmo
+risco.** Corrigido na Eva grande primeiro (`eva-test/src/engine/faqSearch.js`)
+e portado ao vivo pra cá no mesmo pedido da usuária (confirmado
+explicitamente, sem esperar o próximo ciclo do `/sync-eva-lite`): frase-
+gatilho feita só de palavras de cumprimento (`GREETING_TOKENS`, lista
+própria/duplicada aqui, mesmo espírito de `normalize()` já duplicado entre
+os dois arquivos) só mantém confidence=1 quando, tirando a frase batida, o
+resto da mensagem também é só saudação/filler (`isPureGreetingLeftover`) —
+senão cai pra `GREETING_WITH_CONTENT_DISCOUNT` (0.5), mesma magnitude do
+`SCATTERED_MATCH_DISCOUNT` já existente. Aplicado nos dois branches de
+`scorePhrase` (frase de 1 palavra e de várias).
+
+**Não é suficiente sozinho pra esse caso específico** — mesmo com o
+desconto, a FAQ de saudação (0.5) ainda venceria a FAQ de imóvel (0.25) sem
+completar também a keyword que faltava ("preciso alugar"/"precisando
+alugar"); na Eva grande isso foi corrigido direto na FAQ #1 via UPDATE no
+Postgres de produção (dado, não código). Esta Lite não tem o mesmo FAQ de
+imóvel disponível (é imobiliária vs. o negócio "TV Play" desta instância) —
+nenhuma keyword equivalente foi tocada aqui, só o algoritmo.
+
+**Testado:** `test/regression.js` ganhou 2 casos novos (saudação pura
+continua respondendo normal quando é só isso; saudação + pedido real não
+ofusca mais a FAQ certa) — `npm test` passa (6 casos no total, era 4).
+
+**Commitado localmente, não enviado pro GitHub/Render** (mesma disciplina já
+usada nas sincronizações anteriores) — a usuária decide quando fazer o push.

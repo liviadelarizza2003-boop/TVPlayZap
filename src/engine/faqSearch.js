@@ -41,6 +41,40 @@ function candidatePhrases(faqItem) {
 const PHRASE_PROXIMITY_SLACK   = 3;   // tokens extras tolerados entre os tokens da frase
 const SCATTERED_MATCH_DISCOUNT = 0.5; // penalidade se tokens existem mas espalhados/fora de ordem
 
+// Portado da Eva grande (eva-test/src/engine/faqSearch.js, bug real
+// confirmado em produção 09/09/2026): uma frase-gatilho feita só de palavras
+// de cumprimento ("boa tarde", "bom dia") não pode vencer sozinha com
+// confidence=1 quando o resto da mensagem tem conteúdo de verdade além da
+// saudação — ex.: "Oi boa tarde, estou precisando alugar" batia 100% em
+// "boa tarde" e nunca considerava o pedido real, porque a forma como o
+// cliente disse isso não tinha frase-gatilho exata cadastrada em nenhuma
+// outra FAQ (só um match espalhado, com desconto). Mesmo algoritmo/mesma
+// classe de bug daqui (herdado quase literal da Eva grande) — ver
+// EVA_SYNC_LOG.md.
+const GREETING_TOKENS = new Set([
+  'oi', 'ola', 'opa', 'salve', 'eae', 'fala',
+  'bom', 'dia', 'boa', 'tarde', 'noite', 'noites',
+  'tudo', 'bem', 'beleza', 'blz',
+]);
+const GREETING_WITH_CONTENT_DISCOUNT = 0.5;
+
+function isGreetingPhrase(phraseTokens) {
+  return phraseTokens.length > 0 && phraseTokens.every(t => GREETING_TOKENS.has(t));
+}
+
+// Se, tirando os tokens da frase-gatilho batida, o que sobra da mensagem
+// ainda é só saudação/filler, a mensagem é mesmo só um cumprimento (mantém
+// score máximo); se sobrar qualquer palavra que não seja saudação, tem
+// conteúdo real ali que não pode ser ofuscado.
+function isPureGreetingLeftover(msgTokens, phraseTokens) {
+  const remaining = [...msgTokens];
+  for (const t of phraseTokens) {
+    const idx = remaining.indexOf(t);
+    if (idx !== -1) remaining.splice(idx, 1);
+  }
+  return remaining.every(t => GREETING_TOKENS.has(t));
+}
+
 function scorePhrase(msgTokens, phrase) {
   const phraseTokens = tokenize(phrase);
   if (phraseTokens.length === 0) return { score: 0, matches: 0 };
@@ -48,7 +82,11 @@ function scorePhrase(msgTokens, phrase) {
   // Keyword de uma só palavra: bate se estiver na mensagem, independente de posição
   if (phraseTokens.length === 1) {
     const hit = msgTokens.includes(phraseTokens[0]);
-    return { score: hit ? 1 : 0, matches: hit ? 1 : 0 };
+    if (!hit) return { score: 0, matches: 0 };
+    if (isGreetingPhrase(phraseTokens) && !isPureGreetingLeftover(msgTokens, phraseTokens)) {
+      return { score: GREETING_WITH_CONTENT_DISCOUNT, matches: 1 };
+    }
+    return { score: 1, matches: 1 };
   }
 
   // Frase com múltiplas palavras: exige proximidade e ordem
@@ -66,6 +104,9 @@ function scorePhrase(msgTokens, phrase) {
     matchedInOrder === phraseTokens.length &&
     (lastIdx - firstIdx + 1) <= phraseTokens.length + PHRASE_PROXIMITY_SLACK
   ) {
+    if (isGreetingPhrase(phraseTokens) && !isPureGreetingLeftover(msgTokens, phraseTokens)) {
+      return { score: GREETING_WITH_CONTENT_DISCOUNT, matches: phraseTokens.length };
+    }
     return { score: 1, matches: phraseTokens.length };
   }
 
