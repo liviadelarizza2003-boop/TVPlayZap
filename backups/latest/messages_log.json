@@ -15608,5 +15608,65 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-06T21:38:56.888Z"
+  },
+  {
+    "id": 1575,
+    "phone": "556799645035",
+    "direction": "outbound",
+    "body": "Olá, PamelaRoberta! 👋 Passando pra lembrar que seu plano vence dia *06/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T14:58:22.219Z"
+  },
+  {
+    "id": 1576,
+    "phone": "5514996741043",
+    "direction": "outbound",
+    "body": "Olá, Rodolfo! 👋 Passando pra lembrar que seu plano vence dia *12/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T14:58:39.138Z"
+  },
+  {
+    "id": 1577,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Olá, Rodrigo Thiago! 👋 Passando pra lembrar que seu plano vence dia *13/09/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T14:59:26.010Z"
+  },
+  {
+    "id": 1578,
+    "phone": "5514997884155",
+    "direction": "inbound",
+    "body": "Boa tarde",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T15:03:15.159Z"
+  },
+  {
+    "id": 1579,
+    "phone": "5514997884155",
+    "direction": "inbound",
+    "body": "Ok",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T15:03:16.603Z"
+  },
+  {
+    "id": 1580,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-10T15:03:36.007Z"
   }
 ]
