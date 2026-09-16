@@ -15668,5 +15668,35 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-10T15:03:36.007Z"
+  },
+  {
+    "id": 1581,
+    "phone": "556799645035",
+    "direction": "inbound",
+    "body": "Bom dia",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-15T11:27:37.737Z"
+  },
+  {
+    "id": 1582,
+    "phone": "556799645035",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-15T11:27:58.409Z"
+  },
+  {
+    "id": 1583,
+    "phone": "5511955020566",
+    "direction": "outbound",
+    "body": "‎Tv Play agradece seu contato!\nEstamos à disposição para te servir com os melhores canais para sua tv !😀",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-15T15:46:03.287Z"
   }
 ]
