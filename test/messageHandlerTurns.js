@@ -41,7 +41,7 @@ function registerFake(request, exportsObj) {
   require.cache[fakePath] = { id: fakePath, filename: fakePath, loaded: true, exports: exportsObj };
 }
 
-const state = { config: {}, log: [] };
+const state = { config: {}, log: [], pauses: [] };
 let dbWriteDelayMs = 0;
 
 registerFake('../db/db', {
@@ -58,7 +58,9 @@ registerFake('../db/db', {
   async run(sql, params) {
     // O outbound automático (fallback/off_hours/faq) grava `answered_by`
     // como literal na própria SQL, não como placeholder — extrai da query
-    // do mesmo jeito que o Postgres real receberia.
+    // do mesmo jeito que o Postgres real receberia. `handleOwnMessage` grava
+    // `answered_by` como placeholder (varia entre 'human_manual'/'whatsapp_auto'),
+    // então cai no fallback de pegar direto do parâmetro nesse caso.
     if (sql.includes('INSERT INTO messages_log') && sql.includes("'outbound'")) {
       if (dbWriteDelayMs) await new Promise(r => setTimeout(r, dbWriteDelayMs));
       const answeredByMatch = sql.match(/'([a-z_]+)'\)\s*$/i);
@@ -66,8 +68,11 @@ registerFake('../db/db', {
         phone: params[0],
         direction: 'outbound',
         body: params[1],
-        answered_by: answeredByMatch ? answeredByMatch[1] : undefined,
+        answered_by: answeredByMatch ? answeredByMatch[1] : params[2],
       });
+    }
+    if (sql.includes('INSERT INTO human_pauses')) {
+      state.pauses.push({ phone: params[0] });
     }
     return { rows: [] };
   },
@@ -76,7 +81,7 @@ registerFake('../engine/faqSearch', { async search() { return null; } });
 registerFake('./jidUtils', { async resolvePhone(jid) { return jid.replace('@s.whatsapp.net', ''); } });
 
 const messageHandlerPath = path.join(__dirname, '../src/bot/messageHandler.js');
-const { handleMessage } = require(messageHandlerPath);
+const { handleMessage, handleOwnMessage } = require(messageHandlerPath);
 
 let passed = 0;
 let failed = 0;
@@ -139,8 +144,60 @@ async function runMessageHandlerCases() {
   });
 }
 
+function makeOwnMsg(id, jid, text) {
+  return { key: { remoteJid: jid, fromMe: true, id }, message: { conversation: text } };
+}
+
+async function runHandleOwnMessageCases() {
+  console.log('\nmessageHandler — handleOwnMessage() distingue saudação automática do WhatsApp de resposta humana real');
+  // Portado da Eva grande (eva-test, commit 03e8e5d, 09/09/2026): o WhatsApp
+  // Business marca a Saudação/Resposta Rápida automática (fromMe) com um
+  // caractere invisível (U+200E) no início do texto, que não aparece em
+  // texto digitado de verdade. Sem distinguir isso, cada cliente novo que
+  // recebesse essa saudação automática pausava o bot por `human_pause_hours`
+  // (6h por padrão aqui) achando que um humano tinha assumido a conversa.
+
+  await test('saudação automática do WhatsApp (marcador U+200E) não pausa o bot', async () => {
+    state.log = [];
+    state.pauses = [];
+    const jid = '5511999999999@s.whatsapp.net';
+    const autoText = '‎Olá! Obrigado por entrar em contato.';
+
+    await handleOwnMessage(makeOwnMsg('auto1', jid, autoText), new Set(), null);
+
+    assert.equal(state.log.length, 1, 'deveria logar a saudação automática');
+    assert.equal(state.log[0].answered_by, 'whatsapp_auto', 'answered_by deveria ser whatsapp_auto');
+    assert.equal(state.pauses.length, 0, 'NÃO deveria pausar o bot pra saudação automática');
+  });
+
+  await test('resposta manual real (sem marcador) continua pausando o bot normalmente', async () => {
+    state.log = [];
+    state.pauses = [];
+    const jid = '5511999999999@s.whatsapp.net';
+
+    await handleOwnMessage(makeOwnMsg('manual1', jid, 'Oi, pode deixar que eu te atendo aqui'), new Set(), null);
+
+    assert.equal(state.log.length, 1, 'deveria logar a resposta manual');
+    assert.equal(state.log[0].answered_by, 'human_manual', 'answered_by deveria continuar human_manual');
+    assert.equal(state.pauses.length, 1, 'DEVERIA pausar o bot pra resposta manual real');
+  });
+
+  await test('eco do próprio envio do bot (id conhecido) continua ignorado, sem logar nem pausar', async () => {
+    state.log = [];
+    state.pauses = [];
+    const jid = '5511999999999@s.whatsapp.net';
+    const sentIds = new Set(['echo1']);
+
+    await handleOwnMessage(makeOwnMsg('echo1', jid, 'resposta automática do bot'), sentIds, null);
+
+    assert.equal(state.log.length, 0, 'eco do próprio bot não deveria gerar log nenhum');
+    assert.equal(state.pauses.length, 0, 'eco do próprio bot não deveria pausar nada');
+  });
+}
+
 (async () => {
   await runMessageHandlerCases();
+  await runHandleOwnMessageCases();
 
   console.log(`\n${passed} passou, ${failed} falhou.`);
   process.exitCode = failed > 0 ? 1 : 0;

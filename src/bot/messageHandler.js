@@ -359,12 +359,26 @@ async function handleOwnMessage(msg, sentIds, sock) {
   const text = getMessageText(msg).trim();
   const phone = await resolvePhone(jid, msg.key, sock);
 
+  // Saudação/Resposta Rápida automática do WhatsApp Business (configurada
+  // pela própria dona do número pra disparar sozinha em cliente novo, não é
+  // atendente digitando) — o WhatsApp marca esse texto com um caractere
+  // invisível (U+200E, Left-to-Right Mark) no início, que não aparece em
+  // texto digitado de verdade. Mesma classe de bug já achada e corrigida na
+  // Eva grande (`eva-test`, commit 03e8e5d, 09/09/2026): sem essa distinção,
+  // esse texto cai no mesmo branch de "resposta manual de verdade" e pausa
+  // as respostas automáticas por `human_pause_hours` (aqui, 6h por padrão —
+  // pior que lá, onde o takeover padrão é 30min) pra todo cliente novo, sem
+  // nenhum humano ter assumido de fato.
+  const isWhatsappAutoMessage = !!text && text.codePointAt(0) === 0x200e;
+
   if (text) {
     await db.run(
-      `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, 'human_manual')`,
-      [phone, text]
+      `INSERT INTO messages_log (phone, direction, body, answered_by) VALUES (?, 'outbound', ?, ?)`,
+      [phone, text, isWhatsappAutoMessage ? 'whatsapp_auto' : 'human_manual']
     );
   }
+
+  if (isWhatsappAutoMessage) return;
 
   await setHumanPause(phone);
 
