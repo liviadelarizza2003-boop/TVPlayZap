@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node src/api/server.js",
     "dev": "node --watch src/api/server.js",
-    "test": "node test/regression.js && node test/messageHandlerTurns.js"
+    "test": "node test/regression.js && node test/messageHandlerTurns.js && node test/authSecurityQuestion.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc13",

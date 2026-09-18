@@ -51,8 +51,40 @@
     </button>
     <p id="reset-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
     <p id="reset-success" class="text-sm mt-8 hidden" style="text-align:center">Senha redefinida! Você já pode entrar.</p>
+    <p id="use-question-wrap" class="hidden" style="text-align:center;margin-top:12px">
+      <a href="#" id="use-question-link" class="text-sm">Prefiro responder a pergunta secreta</a>
+    </p>
     <p style="text-align:center;margin-top:12px">
       <a href="#" id="cancel-reset-link" class="text-sm">Voltar ao login</a>
+    </p>
+  </div>
+
+  <!-- Reset de senha (pergunta secreta) — só aparece se já foi configurada no painel -->
+  <div id="question-box" class="login-box hidden" style="margin-top:16px">
+    <div class="form-group">
+      <label class="form-label">Pergunta secreta</label>
+      <p id="question-text" style="font-weight:600;margin:4px 0 0"></p>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="question-answer">Sua resposta</label>
+      <input id="question-answer" type="text" class="form-input" placeholder="Não diferencia maiúsculas nem acentos"
+             autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="question-new-password">Nova senha</label>
+      <input id="question-new-password" type="password" class="form-input" placeholder="Mínimo 6 caracteres"
+             autocomplete="new-password">
+    </div>
+    <button id="question-btn" class="btn btn-primary btn-full" style="margin-top:8px">
+      Redefinir senha
+    </button>
+    <p id="question-error" class="text-sm text-red mt-8 hidden" style="text-align:center"></p>
+    <p id="question-success" class="text-sm mt-8 hidden" style="text-align:center">Senha redefinida! Você já pode entrar.</p>
+    <p style="text-align:center;margin-top:12px">
+      <a href="#" id="use-key-link" class="text-sm">Usar a chave de recuperação</a>
+    </p>
+    <p style="text-align:center;margin-top:12px">
+      <a href="#" id="cancel-question-link" class="text-sm">Voltar ao login</a>
     </p>
   </div>
 </div>

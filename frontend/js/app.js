@@ -5,7 +5,12 @@
 'use strict';
 
 // ── API helper ───────────────────────────────────────────────
-const AUTH_EXEMPT_PATHS = ['/api/auth/login', '/api/auth/reset-password'];
+const AUTH_EXEMPT_PATHS = [
+  '/api/auth/login',
+  '/api/auth/reset-password',
+  '/api/auth/recovery-question',
+  '/api/auth/reset-password-by-question',
+];
 
 const api = {
   async get(path) {
@@ -131,19 +136,83 @@ const App = {
     const resetErr    = document.getElementById('reset-error');
     const resetOk     = document.getElementById('reset-success');
 
-    forgotLink.onclick = (e) => {
-      e.preventDefault();
-      loginBox.classList.add('hidden');
+    const questionBox    = document.getElementById('question-box');
+    const questionText   = document.getElementById('question-text');
+    const questionAnswer = document.getElementById('question-answer');
+    const questionPass   = document.getElementById('question-new-password');
+    const questionBtn    = document.getElementById('question-btn');
+    const questionErr    = document.getElementById('question-error');
+    const questionOk     = document.getElementById('question-success');
+    const useQuestionWrap = document.getElementById('use-question-wrap');
+
+    const showKeyBox = () => {
+      questionBox.classList.add('hidden');
       resetBox.classList.remove('hidden');
       resetErr.classList.add('hidden');
       resetOk.classList.add('hidden');
       resetKey.focus();
     };
-
-    cancelLink.onclick = (e) => {
+    const showQuestionBox = () => {
+      resetBox.classList.add('hidden');
+      questionBox.classList.remove('hidden');
+      questionErr.classList.add('hidden');
+      questionOk.classList.add('hidden');
+      questionAnswer.focus();
+    };
+    const backToLogin = (e) => {
       e.preventDefault();
       resetBox.classList.add('hidden');
+      questionBox.classList.add('hidden');
       loginBox.classList.remove('hidden');
+    };
+
+    forgotLink.onclick = async (e) => {
+      e.preventDefault();
+      loginBox.classList.add('hidden');
+
+      // Se a pergunta secreta já foi configurada, é o caminho padrão (a
+      // chave de recuperação fica no Render, bem menos à mão)
+      let question = null;
+      try {
+        const r = await api.get('/api/auth/recovery-question');
+        if (r?.enabled) question = r.question;
+      } catch { /* sem a pergunta, cai na chave de recuperação */ }
+
+      if (question) {
+        questionText.textContent = question;
+        useQuestionWrap.classList.remove('hidden');
+        showQuestionBox();
+      } else {
+        useQuestionWrap.classList.add('hidden');
+        showKeyBox();
+      }
+    };
+
+    cancelLink.onclick = backToLogin;
+    document.getElementById('cancel-question-link').onclick = backToLogin;
+    document.getElementById('use-key-link').onclick = (e) => { e.preventDefault(); showKeyBox(); };
+    document.getElementById('use-question-link').onclick = (e) => { e.preventDefault(); showQuestionBox(); };
+
+    questionBtn.onclick = async () => {
+      questionErr.classList.add('hidden');
+      questionOk.classList.add('hidden');
+      questionBtn.textContent = 'Redefinindo...';
+      questionBtn.disabled = true;
+      try {
+        await api.post('/api/auth/reset-password-by-question', {
+          answer: questionAnswer.value,
+          newPassword: questionPass.value,
+        });
+        questionOk.classList.remove('hidden');
+        questionAnswer.value = '';
+        questionPass.value = '';
+      } catch (e) {
+        questionErr.textContent = e.message;
+        questionErr.classList.remove('hidden');
+      } finally {
+        questionBtn.textContent = 'Redefinir senha';
+        questionBtn.disabled = false;
+      }
     };
 
     const doReset = async () => {

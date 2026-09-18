@@ -231,6 +231,16 @@ existir. Se quiser, dá pra rodar uma consulta pontual em produção pra achar
 esses casos e corrigir manualmente (mesmo padrão de script avulso que a Eva
 grande usa) — combinar antes de rodar qualquer coisa contra o banco real.
 
+## Recuperação de senha por pergunta secreta (adicionado 2026-09-18)
+
+Segunda forma de recuperar a senha do painel, além da `RECOVERY_KEY` (que fica só nas env vars do Render, longe da mão). Rotas em `src/api/routes/auth.js`:
+
+- `GET /api/auth/recovery-question` — **pública** (a tela de login precisa exibir a pergunta; por isso a pergunta não deve conter a resposta). Devolve `{enabled, question}`.
+- `POST /api/auth/security-question` — exige login **e a senha atual** (403 se errada, não 401 — o front trata 401 como sessão expirada). Sem exigir a senha atual, uma sessão esquecida aberta (cookie de 30 dias) bastaria pra plantar uma resposta conhecida e tomar a conta depois.
+- `POST /api/auth/reset-password-by-question` — pública; **trava 15 min após 5 respostas erradas seguidas** (contador global em memória, painel é de usuário único). A `RECOVERY_KEY` não passa por essa trava e segue como saída de emergência.
+
+Armazenamento: `config.security_question` (texto) e `config.security_answer_hash` (bcrypt da resposta **normalizada**: sem acento, minúsculas, espaços colapsados). `security_answer_hash` entra em `CONFIG_KEYS_SENSIVEIS` do backup (resposta de pergunta tem pouca entropia, o hash é mais fácil de quebrar offline que o da senha) e não é devolvido por `GET /api/config` (whitelist `EDITABLE_KEYS`). Cadastro na UI: Config → Ferramentas → "Pergunta secreta". Testes: `test/authSecurityQuestion.js` (roda no `npm test`).
+
 ## Status conhecido (2026-08-25)
 
 Em investigação: lembretes (manuais e automáticos) aparecem como "enviados"

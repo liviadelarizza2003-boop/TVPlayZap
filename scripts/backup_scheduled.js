@@ -49,8 +49,11 @@ const TABELAS = [
 // `admin_password_hash` é hash (bcrypt), não senha em texto puro, mas
 // mesmo assim não tem motivo pra duplicar credencial de acesso num backup
 // versionado — trocar a senha pelo painel continua funcionando normalmente
-// sem depender desse valor estar no backup.
-const CONFIG_KEYS_SENSIVEIS = ['whatsapp_creds', 'admin_password_hash'];
+// sem depender desse valor estar no backup. Mesma regra pra
+// `security_answer_hash` (resposta da pergunta secreta): resposta de pergunta
+// tem pouca entropia, então o hash dela é bem mais fácil de quebrar offline
+// do que o da senha — motivo a mais pra nunca versionar.
+const CONFIG_KEYS_SENSIVEIS = ['whatsapp_creds', 'admin_password_hash', 'security_answer_hash'];
 
 async function main() {
   const connectionString = process.env.DATABASE_URL;

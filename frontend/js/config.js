@@ -426,6 +426,30 @@ const SettingsView = {
         </button>
       </div>
 
+      <!-- Pergunta secreta (recuperação de senha) -->
+      <div class="card">
+        <p class="card-label">❓ Pergunta secreta (recuperar senha)</p>
+        <p id="tool-question-status" class="form-hint" style="margin-bottom:12px">Carregando...</p>
+        <div class="form-group">
+          <label class="form-label">Pergunta <span style="color:var(--text-muted)">(aparece na tela de login — não escreva a resposta nela)</span></label>
+          <input id="tool-question" class="form-input" type="text" maxlength="200"
+                 placeholder="Ex.: Qual o nome do meu primeiro pet?" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resposta <span style="color:var(--text-muted)">(sem diferenciar maiúsculas/acentos; mín. 4 caracteres)</span></label>
+          <input id="tool-answer" class="form-input" type="text" maxlength="200"
+                 placeholder="Algo que só você saiba" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha atual <span style="color:var(--text-muted)">(para confirmar que é você)</span></label>
+          <input id="tool-question-pass" class="form-input" type="password"
+                 placeholder="Digite a senha atual" autocomplete="current-password">
+        </div>
+        <button id="tool-save-question" class="btn btn-primary" style="width:100%">
+          ❓ Salvar pergunta secreta
+        </button>
+      </div>
+
       <!-- Logout -->
       <div class="card">
         <p class="card-label">👋 Sair do painel</p>
@@ -529,6 +553,47 @@ const SettingsView = {
       } finally {
         btn.disabled = false;
         btn.textContent = '🔑 Alterar senha';
+      }
+    };
+
+    // Pergunta secreta
+    const questionStatus = document.getElementById('tool-question-status');
+    const showQuestionStatus = async () => {
+      try {
+        const r = await api.get('/api/auth/recovery-question');
+        questionStatus.textContent = r?.enabled
+          ? `✅ Ativa. Pergunta atual: "${r.question}". Preencha abaixo só se quiser trocar.`
+          : 'Ainda não configurada. Sem ela, só a chave de recuperação do servidor redefine a senha.';
+      } catch {
+        questionStatus.textContent = '';
+      }
+    };
+    showQuestionStatus();
+
+    document.getElementById('tool-save-question').onclick = async () => {
+      const question = document.getElementById('tool-question').value;
+      const answer   = document.getElementById('tool-answer').value;
+      const current  = document.getElementById('tool-question-pass').value;
+
+      if (!question.trim() || !answer.trim() || !current) {
+        showToast('Preencha a pergunta, a resposta e a senha atual.', 'error'); return;
+      }
+
+      const btn = document.getElementById('tool-save-question');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      try {
+        await api.post('/api/auth/security-question', { question, answer, currentPassword: current });
+        showToast('Pergunta secreta salva! 🎉');
+        document.getElementById('tool-question').value      = '';
+        document.getElementById('tool-answer').value        = '';
+        document.getElementById('tool-question-pass').value = '';
+        showQuestionStatus();
+      } catch (e) {
+        showToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '❓ Salvar pergunta secreta';
       }
     };
 
