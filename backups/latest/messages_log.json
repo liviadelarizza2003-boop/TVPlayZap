@@ -15698,5 +15698,65 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-15T15:46:03.287Z"
+  },
+  {
+    "id": 1584,
+    "phone": "5519995470745",
+    "direction": "inbound",
+    "body": "Nova senha: Livi@123",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:24:02.604Z"
+  },
+  {
+    "id": 1585,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "‎Tv Play agradece seu contato!\nEstamos à disposição para te servir com os melhores canais para sua tv !😀",
+    "answered_by": "whatsapp_auto",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:24:06.349Z"
+  },
+  {
+    "id": 1586,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:24:22.028Z"
+  },
+  {
+    "id": 1587,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "Beleza kkk",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:42:59.552Z"
+  },
+  {
+    "id": 1588,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "Fala para Karina que eu não ia vir",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:43:05.304Z"
+  },
+  {
+    "id": 1589,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "Mas o Douglas queria que eu depositasse pra ele paga conta",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-18T17:43:12.266Z"
   }
 ]
