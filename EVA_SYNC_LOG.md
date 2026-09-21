@@ -345,3 +345,41 @@ ofusca mais a FAQ certa) — `npm test` passa (6 casos no total, era 4).
 
 **Commitado localmente, não enviado pro GitHub/Render** (mesma disciplina já
 usada nas sincronizações anteriores) — a usuária decide quando fazer o push.
+
+### 2026-09-18 (ao vivo, mid-sessão) — Eva pausa enquanto o atendente escreve / tela não salta
+
+**Motivo:** usuária reportou na Eva grande dois sintomas com a mesma raiz —
+(1) a Eva respondia junto com o atendente que ainda estava digitando, e (2)
+o painel pulava pra uma conversa nova no meio de uma digitação ou do chat
+interno com um colega. Corrigido em `eva-test` (commit `927a07c`, branch
+`dev`, já no GitHub): novo `src/bot/agentPresence.js` (sinal de "atendente
+digitando" por contato, em memória), `respondToConversation()` esperando o
+atendente parar antes de decidir e de novo antes do envio (`beforeSend` do
+`sendHumanized`), e `requestConversationSwitch()`/`isAgentBusy()` no painel.
+
+**Avaliado e NÃO PORTADO — não se aplica a esta Lite.** A pergunta de
+aplicabilidade foi feita à usuária ao fim da correção, como pede o
+`eva-test/CLAUDE.md`, e ela pediu só o registro aqui (nenhum código da Lite
+foi tocado):
+
+- **Pausa enquanto digita:** o sinal vem do campo de mensagem do painel da
+  Eva grande (`POST /api/conversations/:id/typing`). A Lite não tem painel de
+  conversa nem campo onde um humano digite — não há rota de conversas nem
+  `chat-input` em `frontend/` (só clientes, config, treinamento, dashboard).
+  O humano responde direto pelo WhatsApp (celular/WhatsApp Web), e a Lite só
+  o detecta **depois** do envio, via `fromMe` → `human_pauses`. A digitação
+  no aparelho não chega ao bot (o Baileys não entrega a presença do próprio
+  número), então não existe sinal pra pausar antes. O `composing` que existe
+  em `messageHandler.js` é o da própria Eva.
+- **Tela que salta:** é comportamento exclusivo do painel multi-agente da
+  Eva grande (`Dashboard.onRealtimeMessage`); a Lite não tem equivalente.
+
+**Se um dia a Lite ganhar um painel onde o humano responda:** reavaliar. O
+desenho da Eva grande (sinal por contato, espera antes de decidir + checagem
+final antes do envio, cancelamento devolvendo `eva_intro_sent`/equivalente) é
+o ponto de partida; detalhes na seção "Eva pausa enquanto o atendente
+escreve + tela não salta no meio da atividade (18/09/2026)" do
+`eva-test/CLAUDE.md`.
+
+**Não alterou o "Último commit da Eva revisado"** acima — esta foi uma
+avaliação pontual ao vivo, não uma rodada do `/sync-eva-lite`.
