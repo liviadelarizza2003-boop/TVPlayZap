@@ -97,7 +97,7 @@ livia-bot/
 │   │   ├── db.js                 ← wrapper async sobre `pg` (Postgres/Supabase)
 │   │   └── schema.sql            ← tabelas: clients, faq, faq_candidates, config, renewal_notifications, messages_log
 │   └── scheduler/
-│       └── renewalReminder.js    ← cron diário (9h) de lembretes de vencimento
+│       └── renewalReminder.js    ← cron (a cada 30 min, janela 9h–18h) de lembretes de vencimento
 ├── frontend/                     ← PWA (SPA sem build step)
 │   ├── index.html
 │   ├── manifest.json
