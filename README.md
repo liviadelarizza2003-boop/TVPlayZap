@@ -58,7 +58,7 @@ npm run dev         # com --watch (reinicia sozinho ao salvar arquivos)
 O servidor sobe em `http://localhost:3200` (ou na porta definida em `PORT`). Ele:
 1. Serve o painel PWA (`frontend/`) e a API REST (`/api/*`)
 2. Inicia a conexão com o WhatsApp (Baileys) — gera QR Code se não houver sessão salva no Postgres
-3. Ativa o cron de lembretes de vencimento (todo dia às 9h, fuso `TZ`)
+3. Ativa o cron de lembretes de vencimento (a cada 30 min entre 9h e 18h, horário de Brasília, e também assim que o WhatsApp conecta — quem já recebeu o lembrete daquele vencimento é ignorado)
 
 ### 5. Primeiro acesso
 1. Abra `http://localhost:3200` e entre com a senha de `ADMIN_PASSWORD` (padrão do exemplo: `livia123`)
@@ -127,7 +127,8 @@ O `render.yaml` já está pronto (`render blueprint` — New → Blueprint no da
 - Build: `npm install` / Start: `npm start`
 - Plano free do Render (sem disco — não é suportado no free tier)
 - Clientes, FAQ, configurações **e a sessão de login do WhatsApp** ficam no Postgres do Supabase (`DATABASE_URL`), que sobrevive a restarts/redeploys/hibernação — não é mais preciso escanear o QR Code de novo a cada atualização de código
-- **Configure um pinger** (ex: [cron-job.org](https://cron-job.org)) batendo em `GET /healthz` a cada ~10 min — sem isso, o serviço hiberna por inatividade e o lembrete automático de vencimento (`node-cron` às 9h, `src/scheduler/renewalReminder.js`) não dispara porque o processo está dormindo nesse horário (a sessão do WhatsApp não é perdida ao hibernar, mas o bot fica temporariamente offline até "acordar")
+- **Configure um pinger** (ex: [cron-job.org](https://cron-job.org)) batendo em `GET /healthz` **a cada 10 min, todos os dias, das 8h às 18h50** (horário de Brasília) — sem isso, o serviço hiberna por inatividade e o `node-cron` (`src/scheduler/renewalReminder.js`) não roda porque o processo está dormindo (a sessão do WhatsApp não é perdida ao hibernar, mas o bot fica temporariamente offline até "acordar"). **Cuidado ao configurar:** marcar só o minuto `10` na lista de minutos faz o job rodar **1 vez por hora**, não a cada 10 min — marque `0,10,20,30,40,50`. Passo a passo em `CLAUDE.md`, seção "Lembretes de vencimento".
+- A janela de envio dos lembretes é editável na tabela `config` (`reminder_send_start_hour`, padrão 9, e `reminder_send_end_hour`, padrão 18)
 - `JWT_SECRET` é gerado automaticamente pelo Render
 - `DATABASE_URL`, `GROQ_API_KEY`, `BUSINESS_NAME`, `OWNER_PHONE`, `ADMIN_PASSWORD`, `RECOVERY_KEY` precisam ser preenchidos manualmente no painel do Render (marcados como `sync: false`)
 

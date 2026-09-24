@@ -23,7 +23,7 @@ const { handleMessage, handleOwnMessage } = require('./messageHandler');
 const { ingestHistory } = require('./historyIngest');
 const { reconcileLidPhones } = require('./lidReconcile');
 const { useDbAuthState, clearDbAuthState } = require('./dbAuthState');
-const { setSendMessage }  = require('../scheduler/renewalReminder');
+const { setSendMessage, setIsConnected, runIfDue: runReminderIfDue } = require('../scheduler/renewalReminder');
 const { setSendMessage: setTrialSendMessage } = require('../scheduler/trialFollowup');
 
 const silentLogger = pino({ level: 'silent' });
@@ -87,6 +87,7 @@ async function sendMessage(jid, text) {
 
 // Exponha o sendMessage para os schedulers
 setSendMessage(sendMessage);
+setIsConnected(() => connected);
 setTrialSendMessage(sendMessage);
 
 /** Descarta a sessão atual e cria uma conexão nova do zero */
@@ -164,6 +165,14 @@ async function connect() {
       qrData    = null;
       console.log('[bot] ✅ WhatsApp conectado!');
       broadcastToListeners({ type: 'connected' });
+
+      // Recupera o lembrete de vencimento que o cron de 30 min perdeu por o
+      // processo estar hibernando (Render Free): assim que o WhatsApp conecta,
+      // confere o dia de hoje (só dentro da janela de envio, sem duplicar — ver
+      // renewalReminder.js). Espera um pouco pra conexão estabilizar antes de enviar.
+      setTimeout(() => {
+        runReminderIfDue().catch(err => console.error('[bot] Erro ao verificar lembretes:', err));
+      }, 15_000);
 
       // Corrige telefones "@lid" que ficaram salvos antes de resolvermos pro número real
       reconcileLidPhones(sock).catch(err =>
