@@ -383,3 +383,42 @@ escreve + tela não salta no meio da atividade (18/09/2026)" do
 
 **Não alterou o "Último commit da Eva revisado"** acima — esta foi uma
 avaliação pontual ao vivo, não uma rodada do `/sync-eva-lite`.
+
+### 2026-09-24 (ao vivo) — Eva indica o site em pedido de imóveis parafraseado
+
+**Motivo:** conversa real na Eva grande (Imóveis Santa Cruz): "ver umas casa
+que estão pra locação / pode me enviar algumas" não casou com nenhuma
+frase-gatilho da FAQ do site, a IA foi barrada por baixa confiança e o
+cliente recebeu "vou acionar alguém" sem o link. Corrigido em `eva-test`
+(commit `e391ffa`, branch `dev`, já no GitHub): keywords estreitas na FAQ do
+site + `src/engine/propertyIntent.js` (detector de "quer ver imóveis pra
+alugar") como rede de segurança antes da transferência genérica.
+
+**Avaliado e NÃO PORTADO — não se aplica a esta Lite.** A pergunta de
+aplicabilidade foi feita à usuária, que pediu a avaliação; nenhum código da
+Lite foi tocado:
+
+- **O detector é específico de imobiliária** (casa/imóvel/alugar/locação e
+  exclusões de proprietário, fiador, vistoria etc.). A Lite é um produto
+  genérico por instância (hoje TV Play), e o princípio "indicar o site" é
+  regra do negócio da Imóveis Santa Cruz, não do produto. Portar exigiria um
+  detector de intenção por negócio, que não existe nem é pedido aqui.
+- **O mecanismo que abriu a lacuna não existe na Lite.** Na Eva grande, o
+  pedido caiu porque a IA só responde com contexto de FAQ forte
+  (`blendConfidence`, `ai_min_confidence`) e o fallback era uma transferência
+  genérica sem link. A Lite não tem IA livre nem esse corte: quando a FAQ não
+  casa, `messageHandler.js` manda a `fallback_message` ("vou chamar a
+  Lívia"), por desenho, uma vez por janela (`wasRecentlySent`).
+- **O que vale como lição, sem mudar código:** o `tokenize()` da Lite é o
+  mesmo (`w.length > 2`, descarta "me", "do", "da"), então frase-gatilho de só
+  2 palavras úteis é larga — "me enviar casas" vira "enviar casa" e casa com
+  "enviar os documentos do fiador da casa" (achado pelo teste da Eva grande).
+  Ao cadastrar keywords na Lite, preferir frases de 3+ palavras úteis. Não há
+  bug de código a corrigir aqui.
+
+**Se um dia a Lite ganhar um princípio de "sempre indicar X" por negócio:**
+o desenho da Eva grande (`propertyIntent.js` + `findPropertySearchFaq()`
+localizando a FAQ por dado/config, dedupe por contato) é o ponto de partida.
+
+**Não alterou o "Último commit da Eva revisado"** acima — avaliação pontual ao
+vivo, não uma rodada do `/sync-eva-lite`.
