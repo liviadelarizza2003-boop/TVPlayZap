@@ -15758,5 +15758,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-09-18T17:43:12.266Z"
+  },
+  {
+    "id": 1590,
+    "phone": "5514996880217",
+    "direction": "inbound",
+    "body": "Olá boa tarde",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-28T20:03:25.071Z"
+  },
+  {
+    "id": 1591,
+    "phone": "5514996880217",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-09-28T20:03:43.573Z"
   }
 ]
