@@ -313,5 +313,19 @@
     "sent_at": "2026-09-30T10:22:06.568Z",
     "due_date": "2026-10-03",
     "status": "sent"
+  },
+  {
+    "id": 46,
+    "client_id": 26,
+    "sent_at": "2026-10-02T11:38:59.853Z",
+    "due_date": "2026-10-05",
+    "status": "sent"
+  },
+  {
+    "id": 47,
+    "client_id": 18,
+    "sent_at": "2026-10-02T11:39:12.094Z",
+    "due_date": "2026-10-02",
+    "status": "sent"
   }
 ]
