@@ -15828,5 +15828,15 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-02T11:39:11.915Z"
+  },
+  {
+    "id": 1597,
+    "phone": "5514997881918",
+    "direction": "outbound",
+    "body": "*Confirmação de Renovação*\n\n✅ Usuário: Cleitoncesario\n🗓️ Próximo Vencimento: 03/11/2026 23:59:59",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-03T18:29:07.343Z"
   }
 ]
