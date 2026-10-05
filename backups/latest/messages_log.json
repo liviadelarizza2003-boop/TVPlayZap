@@ -15838,5 +15838,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-03T18:29:07.343Z"
+  },
+  {
+    "id": 1598,
+    "phone": "5511984775807",
+    "direction": "inbound",
+    "body": "Oi tudo bom",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-05T00:44:43.192Z"
+  },
+  {
+    "id": 1599,
+    "phone": "5511984775807",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-05T00:45:03.144Z"
   }
 ]
