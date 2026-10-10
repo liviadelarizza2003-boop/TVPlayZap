@@ -15858,5 +15858,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-05T00:45:03.144Z"
+  },
+  {
+    "id": 1600,
+    "phone": "5514996163733",
+    "direction": "inbound",
+    "body": "Boa noite",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-09T12:45:08.918Z"
+  },
+  {
+    "id": 1601,
+    "phone": "5514996163733",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-09T12:45:28.496Z"
   }
 ]
