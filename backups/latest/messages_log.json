@@ -15878,5 +15878,55 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-09T12:45:28.496Z"
+  },
+  {
+    "id": 1602,
+    "phone": "5514997884155",
+    "direction": "inbound",
+    "body": "Ok",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-10T12:08:56.000Z"
+  },
+  {
+    "id": 1603,
+    "phone": "5514997884155",
+    "direction": "inbound",
+    "body": "Vou renovar sim",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-10T12:09:02.689Z"
+  },
+  {
+    "id": 1604,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-10T12:09:22.383Z"
+  },
+  {
+    "id": 1605,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Tudo bem",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-10T12:09:34.013Z"
+  },
+  {
+    "id": 1606,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Perfeito",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-10T12:09:35.726Z"
   }
 ]
