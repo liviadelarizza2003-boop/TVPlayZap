@@ -15928,5 +15928,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-10T12:09:35.726Z"
+  },
+  {
+    "id": 1607,
+    "phone": "556799645035",
+    "direction": "outbound",
+    "body": "*Confirmação de Renovação*\n\n✅ Usuário: PamelaRoberta\n🗓️ Próximo Vencimento: 11/11/2026 23:59:59",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-11T12:17:54.944Z"
+  },
+  {
+    "id": 1608,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "*Confirmação de Renovação*\n\n✅ Usuário: RodrigoThiago\n🗓️ Próximo Vencimento: 13/11/2026 23:59:59",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-12T14:17:02.414Z"
   }
 ]
