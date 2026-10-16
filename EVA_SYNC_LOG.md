@@ -422,3 +422,20 @@ localizando a FAQ por dado/config, dedupe por contato) é o ponto de partida.
 
 **Não alterou o "Último commit da Eva revisado"** acima — avaliação pontual ao
 vivo, não uma rodada do `/sync-eva-lite`.
+
+## 16/10/2026 — Link compartilhado / mensagem embrulhada descartada (avaliação ao vivo, portado)
+
+Eva grande (eva-v1, commit `7fa2e18`): cliente compartilhou link de postagem do
+Facebook e a mensagem nunca apareceu. Causa: Baileys não desembrulha
+`ephemeralMessage`/`viewOnce*` e o texto só era lido de `conversation`,
+`extendedTextMessage.text` e legendas; sem texto a mensagem era descartada.
+
+**Portado para a Lite** (`src/bot/messageHandler.js`): `unwrapMessage()` (via
+`normalizeMessageContent`) dentro de `getMessageText()`, que serve tanto
+`handleMessage` quanto `handleOwnMessage`; e leitura do preview de link
+(título + descrição + URL) quando `text` vem vazio. Testes em
+`test/messageHandlerTurns.js`.
+
+**Não portado, de propósito:** o marcador "tipo não suportado" — a Lite ignora
+mensagens sem texto por desenho (não há painel onde o marcador apareça).
+Não alterou o "Último commit da Eva revisado".

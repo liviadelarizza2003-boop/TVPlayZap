@@ -19,6 +19,7 @@
  * está atendendo ao vivo.
  */
 
+const { normalizeMessageContent } = require('@whiskeysockets/baileys');
 const db           = require('../db/db');
 const { search }   = require('../engine/faqSearch');
 const { resolvePhone } = require('./jidUtils');
@@ -61,15 +62,39 @@ async function getConfigValue(key) {
   return (await db.get('SELECT value FROM config WHERE key = ?', [key]))?.value || '';
 }
 
+// O WhatsApp embrulha certas mensagens num envelope (ephemeralMessage, viewOnce...)
+// e o Baileys não desembrulha sozinho: nenhum campo de texto batia e a mensagem
+// era descartada por `if (!text) return` antes de ser gravada. Caso real na Eva
+// grande, 16/10/2026: link de postagem do Facebook compartilhado pelo cliente.
+function unwrapMessage(msg) {
+  if (!msg?.message) return msg;
+  try {
+    const inner = normalizeMessageContent(msg.message);
+    if (inner) msg.message = inner;
+  } catch (_) { /* mantém o envelope original */ }
+  return msg;
+}
+
+// Compartilhamento vindo de outro app (Facebook/Instagram) pode trazer `text`
+// vazio e só o preview do link: título, descrição e URL.
+function getLinkPreviewText(ext) {
+  if (!ext) return '';
+  const url = ext.matchedText || ext.canonicalUrl || '';
+  return [ext.title, ext.description, url].filter(Boolean).join('\n');
+}
+
 function getMessageText(msg) {
+  unwrapMessage(msg);
   const m = msg.message;
   if (!m) return '';
   return (
     m.conversation ||
     m.extendedTextMessage?.text ||
+    getLinkPreviewText(m.extendedTextMessage) ||
     m.imageMessage?.caption ||
     m.videoMessage?.caption ||
     m.documentMessage?.caption ||
+    m.documentWithCaptionMessage?.message?.documentMessage?.caption ||
     ''
   );
 }

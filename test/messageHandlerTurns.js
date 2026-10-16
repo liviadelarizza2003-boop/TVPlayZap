@@ -195,9 +195,26 @@ async function runHandleOwnMessageCases() {
   });
 }
 
+async function runSharedLinkCases() {
+  console.log('\nmessageHandler — getMessageText() lê link compartilhado e mensagem embrulhada');
+  const { getMessageText } = require(messageHandlerPath);
+
+  await test('mensagem embrulhada (ephemeral) com link é desembrulhada e lida', async () => {
+    const msg = { message: { ephemeralMessage: { message: { extendedTextMessage: { text: 'Quero detalhes https://fb.com/p/1' } } } } };
+    assert.equal(getMessageText(msg), 'Quero detalhes https://fb.com/p/1');
+  });
+
+  await test('compartilhamento só com preview de link (text vazio) usa título/descrição/URL', async () => {
+    const msg = { message: { extendedTextMessage: { matchedText: 'https://fb.com/p/1', title: 'Casa à venda', description: '3 quartos' } } };
+    const t = getMessageText(msg);
+    assert.ok(t.includes('https://fb.com/p/1') && t.includes('Casa à venda'));
+  });
+}
+
 (async () => {
   await runMessageHandlerCases();
   await runHandleOwnMessageCases();
+  await runSharedLinkCases();
 
   console.log(`\n${passed} passou, ${failed} falhou.`);
   process.exitCode = failed > 0 ? 1 : 0;
