@@ -74,11 +74,11 @@
     "name": "ArielFontanive",
     "phone": "5547928302930",
     "plan": "30,00",
-    "due_date": "2026-10-15",
+    "due_date": "2026-11-16",
     "notes": null,
     "is_active": 1,
     "created_at": "2026-08-16T09:17:35.874Z",
-    "updated_at": "2026-09-30T10:14:36.969Z",
+    "updated_at": "2026-10-17T09:05:32.553Z",
     "is_trial": 0,
     "trial_started_at": null,
     "trial_message_sent": 0
