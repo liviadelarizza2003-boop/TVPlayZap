@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-25T10:53:56.016Z",
+  "generatedAt": "2026-10-26T12:24:56.829Z",
   "tables": {
     "config": 18,
     "clients": 21,
     "faq": 4,
     "faq_candidates": 13,
     "client_candidates": 20,
-    "renewal_notifications": 52,
+    "renewal_notifications": 53,
     "human_pauses": 8,
     "messages_log": 1595
   }
