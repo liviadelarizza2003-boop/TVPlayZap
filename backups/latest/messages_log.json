@@ -15948,5 +15948,55 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-12T14:17:02.414Z"
+  },
+  {
+    "id": 1609,
+    "phone": "5519995470745",
+    "direction": "outbound",
+    "body": "Olá, Lilian Santos! 👋 Passando pra lembrar que seu plano vence dia *26/10/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-26T23:12:39.312Z"
+  },
+  {
+    "id": 1610,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Perfeito \nSó um momento vou ativar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-26T23:13:11.079Z"
+  },
+  {
+    "id": 1611,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "Ok",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-26T23:13:27.650Z"
+  },
+  {
+    "id": 1612,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Recarregar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-26T23:20:21.904Z"
+  },
+  {
+    "id": 1613,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Para ele atualizar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-26T23:20:24.239Z"
   }
 ]
