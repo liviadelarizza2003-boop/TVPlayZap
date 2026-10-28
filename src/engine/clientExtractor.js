@@ -22,6 +22,8 @@ let state = {
   total:     0,
   processed: 0,
   generated: 0,
+  failed:    0,
+  lastError: null,
   error:     null,
   finishedAt: null,
 };
@@ -29,6 +31,15 @@ let state = {
 function getState() { return { ...state }; }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Modelos Groq em ordem de fallback. Bug real (28/10/2026): o modelo antigo
+// (llama-3.3-70b-versatile) deixou de existir na Groq (404 model_not_found) e o
+// erro era engolido por telefone — a análise terminava "com sucesso" gerando 0
+// sugestões. Mesmo catálogo/ajustes validados na Eva grande (aiHandler.js): são
+// modelos de raciocínio, então precisam de reasoning_effort baixo e max_tokens
+// folgado, senão gastam tudo pensando e devolvem texto vazio. Testar contra
+// https://api.groq.com/openai/v1/models se isso quebrar de novo.
+const GROQ_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
 
 const MAX_MESSAGES_PER_PHONE = 80;   // mensagens mais recentes consideradas por conversa
 const DELAY_MS               = 6000; // pausa entre chamadas ao Groq (respeita rate limit do free tier)
@@ -81,24 +92,33 @@ Responda APENAS um JSON válido, sem explicação, sem markdown, no formato exat
 {"name": "...", "plan": "...", "due_date": "YYYY-MM-DD"}
 Use null (não a string "null") nos campos que não conseguir identificar.`;
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({
-      model:       'llama-3.3-70b-versatile',
-      messages:    [{ role: 'user', content: prompt }],
-      max_tokens:  300,
-      temperature: 0.1,
-    }),
-  });
+  let text = null;
+  let lastError = null;
+  for (const model of GROQ_MODELS) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:  'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        model,
+        messages:         [{ role: 'user', content: prompt }],
+        max_tokens:       1500,
+        temperature:      0.1,
+        reasoning_effort: 'low',
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Groq respondeu ${res.status}: ${err}`);
+    if (!res.ok) {
+      lastError = `Groq (${model}) respondeu ${res.status}: ${(await res.text()).slice(0, 200)}`;
+      continue; // tenta o próximo modelo
+    }
+
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content?.trim();
+    if (content) { text = content; break; }
+    lastError = `Groq (${model}) devolveu resposta vazia`;
   }
 
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content?.trim() || '{}';
+  if (text === null) throw new Error(lastError || 'Groq sem resposta');
 
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return null;
@@ -117,7 +137,7 @@ async function runExtraction() {
     throw new Error('Extração já em andamento');
   }
 
-  state = { running: true, total: 0, processed: 0, generated: 0, error: null, finishedAt: null };
+  state = { running: true, total: 0, processed: 0, generated: 0, failed: 0, lastError: null, error: null, finishedAt: null };
 
   try {
     const phones = await collectCandidatePhones();
@@ -144,6 +164,8 @@ async function runExtraction() {
           state.generated++;
         }
       } catch (err) {
+        state.failed++;
+        state.lastError = err.message;
         console.error(`[clientExtractor] Erro no telefone ${phone} (seguindo):`, err.message);
       }
 
@@ -154,6 +176,11 @@ async function runExtraction() {
       }
     }
 
+    // Se TODAS as análises falharam, não é "zero clientes novos" — é erro. Sem
+    // isso a tela mostrava a análise como concluída sem nenhuma pista do problema.
+    if (state.failed > 0 && state.failed === state.total) {
+      state.error = `Todas as ${state.total} análises falharam. Último erro: ${state.lastError}`;
+    }
     state.running    = false;
     state.finishedAt = new Date().toISOString();
     console.log(`[clientExtractor] Concluído: ${state.generated} clientes sugeridos de ${state.total} conversas.`);
@@ -166,4 +193,4 @@ async function runExtraction() {
   }
 }
 
-module.exports = { runExtraction, getState };
+module.exports = { runExtraction, getState, askGroqForClientInfo };
