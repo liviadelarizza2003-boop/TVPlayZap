@@ -313,5 +313,75 @@
     "sent_at": "2026-09-30T10:22:06.568Z",
     "due_date": "2026-10-03",
     "status": "sent"
+  },
+  {
+    "id": 46,
+    "client_id": 26,
+    "sent_at": "2026-10-02T11:38:59.853Z",
+    "due_date": "2026-10-05",
+    "status": "sent"
+  },
+  {
+    "id": 47,
+    "client_id": 18,
+    "sent_at": "2026-10-02T11:39:12.094Z",
+    "due_date": "2026-10-02",
+    "status": "sent"
+  },
+  {
+    "id": 48,
+    "client_id": 23,
+    "sent_at": "2026-10-07T12:50:49.532Z",
+    "due_date": "2026-10-10",
+    "status": "sent"
+  },
+  {
+    "id": 49,
+    "client_id": 13,
+    "sent_at": "2026-10-08T12:58:42.288Z",
+    "due_date": "2026-10-11",
+    "status": "sent"
+  },
+  {
+    "id": 50,
+    "client_id": 20,
+    "sent_at": "2026-10-10T12:03:40.194Z",
+    "due_date": "2026-10-13",
+    "status": "sent"
+  },
+  {
+    "id": 51,
+    "client_id": 24,
+    "sent_at": "2026-10-10T12:03:41.930Z",
+    "due_date": "2026-10-13",
+    "status": "sent"
+  },
+  {
+    "id": 52,
+    "client_id": 10,
+    "sent_at": "2026-10-12T14:15:16.442Z",
+    "due_date": "2026-10-15",
+    "status": "sent"
+  },
+  {
+    "id": 53,
+    "client_id": 6,
+    "sent_at": "2026-10-25T12:22:25.487Z",
+    "due_date": "2026-10-28",
+    "status": "sent"
+  },
+  {
+    "id": 54,
+    "client_id": 29,
+    "sent_at": "2026-10-26T12:26:09.331Z",
+    "due_date": "2026-10-29",
+    "status": "sent"
+  },
+  {
+    "id": 55,
+    "client_id": 4,
+    "sent_at": "2026-10-26T23:12:39.499Z",
+    "due_date": "2026-10-26",
+    "status": "sent"
   }
 ]
