@@ -15998,5 +15998,85 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-26T23:20:24.239Z"
+  },
+  {
+    "id": 1614,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Boa tarde",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:28:37.590Z"
+  },
+  {
+    "id": 1615,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Tudo certo?",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:28:39.800Z"
+  },
+  {
+    "id": 1616,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "Boa tarde",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:28:53.812Z"
+  },
+  {
+    "id": 1617,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "Tudo certo",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:28:57.594Z"
+  },
+  {
+    "id": 1618,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Opa que bom",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:30:04.302Z"
+  },
+  {
+    "id": 1619,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "Gostei do aplicativo 🙏🏽",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:31:00.569Z"
+  },
+  {
+    "id": 1620,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Qualquer coisa só me manda mensagem",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:31:18.356Z"
+  },
+  {
+    "id": 1621,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "Tá bom",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-28T16:31:30.546Z"
   }
 ]
