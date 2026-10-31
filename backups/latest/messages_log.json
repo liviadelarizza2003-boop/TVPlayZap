@@ -16078,5 +16078,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-28T16:31:30.546Z"
+  },
+  {
+    "id": 1622,
+    "phone": "554792830293",
+    "direction": "outbound",
+    "body": "Bom dia",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-31T09:28:48.495Z"
+  },
+  {
+    "id": 1623,
+    "phone": "554792830293",
+    "direction": "outbound",
+    "body": "Vou verificar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-10-31T09:28:49.924Z"
   }
 ]
