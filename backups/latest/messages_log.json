@@ -16098,5 +16098,15 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-10-31T09:28:49.924Z"
+  },
+  {
+    "id": 1624,
+    "phone": "5514997881918",
+    "direction": "outbound",
+    "body": "Olá, Cleiton Cesário! 👋 Passando pra lembrar que seu plano vence dia *03/11/2026*. Quer renovar? É só me avisar! 😊",
+    "answered_by": "manual_reminder",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-01T23:52:49.207Z"
   }
 ]
