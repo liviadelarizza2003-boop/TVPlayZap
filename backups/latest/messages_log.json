@@ -16108,5 +16108,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-11-01T23:52:49.207Z"
+  },
+  {
+    "id": 1625,
+    "phone": "5511984775807",
+    "direction": "inbound",
+    "body": "vou renovar sim, te mando amanha",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-03T13:47:11.663Z"
+  },
+  {
+    "id": 1626,
+    "phone": "5511984775807",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-03T13:47:31.253Z"
   }
 ]
