@@ -242,11 +242,11 @@
     "name": "João AP Veloso",
     "phone": "5514997732295",
     "plan": "30,00",
-    "due_date": "2026-11-05",
+    "due_date": "2026-12-05",
     "notes": null,
     "is_active": 1,
     "created_at": "2026-08-16T09:48:48.933Z",
-    "updated_at": "2026-10-03T18:27:45.695Z",
+    "updated_at": "2026-11-05T14:29:02.494Z",
     "is_trial": 0,
     "trial_started_at": null,
     "trial_message_sent": 0
