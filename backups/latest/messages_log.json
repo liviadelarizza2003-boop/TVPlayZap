@@ -16128,5 +16128,165 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-11-03T13:47:31.253Z"
+  },
+  {
+    "id": 1627,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Boa tarde",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:28.591Z"
+  },
+  {
+    "id": 1628,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Obrigada já mando a renovação",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:29.044Z"
+  },
+  {
+    "id": 1629,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Boa tarde",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:29.581Z"
+  },
+  {
+    "id": 1630,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Obrigada já mando a renovação",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:30.836Z"
+  },
+  {
+    "id": 1631,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Estou na rua",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:30.849Z"
+  },
+  {
+    "id": 1632,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Boa noite",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:34.842Z"
+  },
+  {
+    "id": 1633,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Só um momento",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:35.990Z"
+  },
+  {
+    "id": 1634,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Sai do aplicativo",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:37.144Z"
+  },
+  {
+    "id": 1635,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "*Confirmação de Renovação*\n\n✅ Usuário: RodrigoThiago\n🗓️ Próximo Vencimento: 13/12/2026 23:59:59",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:38.095Z"
+  },
+  {
+    "id": 1636,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Entra de novo",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:38.711Z"
+  },
+  {
+    "id": 1637,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Só um momento",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:39.419Z"
+  },
+  {
+    "id": 1638,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "E vê se aparece os códigos",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:39.681Z"
+  },
+  {
+    "id": 1639,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Para eu puxar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:40.753Z"
+  },
+  {
+    "id": 1640,
+    "phone": "5514997905890",
+    "direction": "outbound",
+    "body": "*Confirmação de Renovação*\n\n✅ Usuário: JoaoVeloso\n🗓️ Próximo Vencimento: 12/12/2026 23:59:59",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:43.748Z"
+  },
+  {
+    "id": 1641,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "O meu também apareceu",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:44.363Z"
+  },
+  {
+    "id": 1642,
+    "phone": "5514997884155",
+    "direction": "outbound",
+    "body": "Coloquei o código e entrou",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-13T14:04:45.249Z"
   }
 ]
