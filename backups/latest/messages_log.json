@@ -16288,5 +16288,175 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-11-13T14:04:45.249Z"
+  },
+  {
+    "id": 1643,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Deu certo",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:56:39.013Z"
+  },
+  {
+    "id": 1644,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Olá! Nosso horário de atendimento é das 7h às 23h. Retornaremos em breve! 😊",
+    "answered_by": "off_hours",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:56:57.174Z"
+  },
+  {
+    "id": 1645,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Perfeito",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:03.489Z"
+  },
+  {
+    "id": 1646,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Qualquer coisa",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:08.023Z"
+  },
+  {
+    "id": 1647,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Tá sem aqueles canais la",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:09.939Z"
+  },
+  {
+    "id": 1648,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Pode manda mensagem",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:14.962Z"
+  },
+  {
+    "id": 1649,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Obrigado",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:18.629Z"
+  },
+  {
+    "id": 1650,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Sim",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:20.525Z"
+  },
+  {
+    "id": 1651,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Pode ativar denovo",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:36.401Z"
+  },
+  {
+    "id": 1652,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Tudo bem",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T03:57:40.305Z"
+  },
+  {
+    "id": 1653,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Mudei aqui \nDeve dar instabilidade aí \nPeço que saia e entre",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:05:40.504Z"
+  },
+  {
+    "id": 1654,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Para recarregar",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:05:44.047Z"
+  },
+  {
+    "id": 1655,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Me informe se está funcionando",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:05:53.545Z"
+  },
+  {
+    "id": 1656,
+    "phone": "5514997881918",
+    "direction": "outbound",
+    "body": "Boa noite \nDeu certo?",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:07:13.858Z"
+  },
+  {
+    "id": 1657,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Não apareceu não",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:08:11.525Z"
+  },
+  {
+    "id": 1658,
+    "phone": "5512997633358",
+    "direction": "inbound",
+    "body": "Eu tô assistindo documentário",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:08:18.076Z"
+  },
+  {
+    "id": 1659,
+    "phone": "5512997633358",
+    "direction": "outbound",
+    "body": "Mas está pegando canais ?",
+    "answered_by": "human_manual",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-17T04:10:09.156Z"
   }
 ]
