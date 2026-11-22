@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T14:21:16.728Z",
+  "generatedAt": "2026-11-22T14:12:44.728Z",
   "tables": {
     "config": 18,
     "clients": 22,
@@ -8,6 +8,6 @@
     "client_candidates": 20,
     "renewal_notifications": 65,
     "human_pauses": 13,
-    "messages_log": 1646
+    "messages_log": 1648
   }
 }

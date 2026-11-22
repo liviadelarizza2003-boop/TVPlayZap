@@ -16458,5 +16458,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-11-17T04:10:09.156Z"
+  },
+  {
+    "id": 1660,
+    "phone": "5511996899532",
+    "direction": "inbound",
+    "body": "Boa noite",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-22T00:44:53.196Z"
+  },
+  {
+    "id": 1661,
+    "phone": "5511996899532",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-22T00:45:11.272Z"
   }
 ]
