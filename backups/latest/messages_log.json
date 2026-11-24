@@ -16478,5 +16478,25 @@
     "faq_id": null,
     "confidence": null,
     "sent_at": "2026-11-22T00:45:11.272Z"
+  },
+  {
+    "id": 1662,
+    "phone": "5514998488587",
+    "direction": "inbound",
+    "body": "‎Vinicius Costa agradece seu contato. Como podemos ajudar?",
+    "answered_by": null,
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-24T14:35:45.411Z"
+  },
+  {
+    "id": 1663,
+    "phone": "5514998488587",
+    "direction": "outbound",
+    "body": "Olá! 😊 Vou chamar a Lívia para você. Aguarde um momentinho!",
+    "answered_by": "fallback",
+    "faq_id": null,
+    "confidence": null,
+    "sent_at": "2026-11-24T14:36:03.636Z"
   }
 ]

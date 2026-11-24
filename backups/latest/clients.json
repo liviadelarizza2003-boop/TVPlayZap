@@ -88,11 +88,11 @@
     "name": "TamiresGomes",
     "phone": "5514991796400",
     "plan": "30,00",
-    "due_date": "2026-11-26",
+    "due_date": "2027-02-26",
     "notes": null,
     "is_active": 1,
     "created_at": "2026-08-16T09:18:13.402Z",
-    "updated_at": "2026-10-25T12:22:45.554Z",
+    "updated_at": "2026-11-24T14:35:48.654Z",
     "is_trial": 0,
     "trial_started_at": null,
     "trial_message_sent": 0
